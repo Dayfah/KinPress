@@ -2,8 +2,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { SubmitArticleButton } from "./submit-button";
 
 const ARTICLE_STATUSES = ["draft", "review", "published", "archived"] as const;
+const COVER_BUCKET = "article-covers";
+const COVER_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+const COVER_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MANAGER_ROLES = new Set(["admin", "editor"]);
 
 type ArticleStatus = (typeof ARTICLE_STATUSES)[number];
@@ -60,6 +64,59 @@ function readTags(formData: FormData) {
     .filter(Boolean);
 }
 
+function readCoverImageFile(formData: FormData) {
+  const value = formData.get("cover_image_file");
+
+  if (!(value instanceof File) || value.size === 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function getFileExtension(fileName: string) {
+  return fileName.toLowerCase().split(".").pop() ?? "";
+}
+
+function getContentType(file: File, extension: string) {
+  if (file.type) {
+    return file.type;
+  }
+
+  if (extension === "jpg" || extension === "jpeg") {
+    return "image/jpeg";
+  }
+
+  return `image/${extension}`;
+}
+
+function validateCoverImage(file: File) {
+  const extension = getFileExtension(file.name);
+  const contentType = getContentType(file, extension);
+
+  if (
+    !COVER_IMAGE_EXTENSIONS.has(extension) ||
+    !COVER_IMAGE_TYPES.has(contentType)
+  ) {
+    return {
+      error: "Cover image must be a JPG, JPEG, PNG, or WEBP file.",
+    };
+  }
+
+  return { extension, contentType };
+}
+
+function buildCoverImagePath(userId: string, slug: string, extension: string) {
+  const safeSlug =
+    slug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "article";
+  const fileExtension = extension === "jpeg" ? "jpg" : extension;
+
+  return `${userId}/${Date.now()}-${safeSlug}.${fileExtension}`;
+}
+
 function canManageArticles(profile: Profile | null) {
   return Boolean(profile?.role && MANAGER_ROLES.has(profile.role));
 }
@@ -75,6 +132,41 @@ function profileAuthorName(profile: Profile | null, email?: string) {
 
 function messageRedirect(message: string) {
   redirect(`/admin/articles/new?error=${encodeURIComponent(message)}`);
+}
+
+async function uploadCoverImage(
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
+  file: File,
+  userId: string,
+  slug: string,
+) {
+  const validation = validateCoverImage(file);
+
+  if ("error" in validation) {
+    return validation;
+  }
+
+  const filePath = buildCoverImagePath(userId, slug, validation.extension);
+  const { error: uploadError } = await supabase.storage
+    .from(COVER_BUCKET)
+    .upload(filePath, file, {
+      contentType: validation.contentType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return { error: `Cover image upload failed: ${uploadError.message}` };
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(COVER_BUCKET).getPublicUrl(filePath);
+
+  if (!publicUrl) {
+    return { error: "Cover image uploaded, but no public URL was generated." };
+  }
+
+  return { publicUrl };
 }
 
 async function loadCurrentProfile() {
@@ -125,6 +217,23 @@ async function createArticle(formData: FormData) {
 
   const categoryId = optionalTextField(formData, "category_id");
   const publishedAt = status === "published" ? new Date().toISOString() : null;
+  const coverImageFile = readCoverImageFile(formData);
+  let coverImageUrl = optionalTextField(formData, "cover_image_url");
+
+  if (coverImageFile) {
+    const uploadResult = await uploadCoverImage(
+      supabase,
+      coverImageFile,
+      user.id,
+      slug,
+    );
+
+    if ("error" in uploadResult) {
+      messageRedirect(uploadResult.error);
+    }
+
+    coverImageUrl = uploadResult.publicUrl;
+  }
 
   const { error } = await supabase.from("articles").insert({
     title,
@@ -134,7 +243,7 @@ async function createArticle(formData: FormData) {
     body,
     category_id: categoryId,
     tags: readTags(formData),
-    cover_image_url: optionalTextField(formData, "cover_image_url"),
+    cover_image_url: coverImageUrl,
     is_premium: formData.get("is_premium") === "on",
     is_featured: formData.get("is_featured") === "on",
     status,
@@ -315,13 +424,29 @@ export default async function NewArticlePage({
             </label>
 
             <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-3">
-              Cover image URL
+              Cover image upload
+              <input
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                className="border border-dashed border-ink/25 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-bold file:uppercase file:tracking-[0.12em] file:text-bone"
+                name="cover_image_file"
+                type="file"
+              />
+              <span className="text-xs font-normal normal-case tracking-normal text-ink/60">
+                JPG, JPEG, PNG, and WEBP files upload to Supabase Storage.
+              </span>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-3">
+              Cover image URL fallback
               <input
                 className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
                 name="cover_image_url"
                 placeholder="https://..."
                 type="url"
               />
+              <span className="text-xs font-normal normal-case tracking-normal text-ink/60">
+                Used only when no file is selected.
+              </span>
             </label>
           </section>
 
@@ -337,12 +462,7 @@ export default async function NewArticlePage({
               </label>
             </div>
 
-            <button
-              className="inline-flex justify-center rounded-full bg-ink px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-bone transition hover:bg-heritage"
-              type="submit"
-            >
-              Save article
-            </button>
+            <SubmitArticleButton />
           </section>
         </form>
       </section>
