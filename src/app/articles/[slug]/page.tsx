@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getPublishedArticleBySlug, type Article } from "@/lib/articles";
 
 type ArticlePageProps = {
@@ -40,7 +41,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <article className="article-shell">
         {article.coverImageUrl ? (
           <figure className="article-cover">
-            <img src={article.coverImageUrl} alt="" />
+            <Image
+              src={article.coverImageUrl}
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 1120px) 100vw, 1120px"
+            />
           </figure>
         ) : null}
 

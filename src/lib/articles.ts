@@ -93,6 +93,10 @@ export const getPublishedArticleBySlug = cache(async function getPublishedArticl
     .maybeSingle<RawArticle>();
 
   if (error) {
+    if (error.code === "PGRST116") {
+      return null;
+    }
+
     throw new Error(`Unable to load article: ${error.message}`);
   }
 

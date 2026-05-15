@@ -79,6 +79,7 @@ img {
 }
 
 .article-cover {
+  position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
