@@ -239,9 +239,9 @@ async function createArticle(formData: FormData) {
 
     if ("error" in uploadResult) {
       messageRedirect(uploadResult.error);
+    } else {
+      coverImageUrl = uploadResult.publicUrl;
     }
-
-    coverImageUrl = uploadResult.publicUrl;
   }
 
   const { error } = await supabase.from("articles").insert({
