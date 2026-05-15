@@ -1,2 +1,7 @@
 # KinPress
-The Black Community 
+
+The Black Community
+
+## Development
+
+This project uses React, TypeScript, Vite, Tailwind CSS, and shadcn/ui.
