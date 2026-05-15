@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import type { ArticleRecord } from "@/lib/content";
 import {
   firstText,
@@ -22,7 +23,7 @@ export function FeaturedArticle({ article }: FeaturedArticleProps) {
 
   return (
     <article className="overflow-hidden border-y border-ink bg-bone">
-      <a className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]" href={getArticleHref(article)}>
+      <Link className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]" href={getArticleHref(article)}>
         <div className="flex min-h-[24rem] flex-col justify-between gap-10 p-6 sm:p-8 lg:p-10">
           <div className="grid gap-5">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-heritage">
@@ -58,7 +59,7 @@ export function FeaturedArticle({ article }: FeaturedArticleProps) {
             </span>
           </div>
         )}
-      </a>
+      </Link>
     </article>
   );
 }

@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import type { ArticleRecord } from "@/lib/content";
 import {
   firstText,
@@ -22,7 +23,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
 
   return (
     <article className="group border-t border-ink/15 pt-5">
-      <a className="grid gap-4" href={getArticleHref(article)}>
+      <Link className="grid gap-4" href={getArticleHref(article)}>
         {image ? (
           <div className="aspect-[4/3] overflow-hidden bg-ink/10">
             <img
@@ -48,7 +49,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             <p className="line-clamp-3 text-sm leading-6 text-ink/70">{excerpt}</p>
           ) : null}
         </div>
-      </a>
+      </Link>
     </article>
   );
 }

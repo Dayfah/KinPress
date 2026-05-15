@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryPill } from "@/components/category-pill";
 import { FeaturedArticle } from "@/components/featured-article";
@@ -66,9 +67,9 @@ export default async function Home() {
     <main className="min-h-screen">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-8 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between border-b border-ink pb-5">
-          <a className="font-serif text-3xl font-bold tracking-tight" href="/">
+          <Link className="font-serif text-3xl font-bold tracking-tight" href="/">
             KinPress
-          </a>
+          </Link>
           <p className="hidden text-xs font-bold uppercase tracking-[0.24em] text-muted-brown sm:block">
             Black-centered journalism
           </p>
@@ -163,12 +164,12 @@ export default async function Home() {
               A newsroom and archive built for the people who keep culture moving.
             </h2>
           </div>
-          <a
+          <Link
             className="inline-flex w-fit rounded-full bg-bone px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-ink transition hover:bg-gold"
             href="/signup"
           >
             Join the list
-          </a>
+          </Link>
         </section>
       </section>
     </main>
