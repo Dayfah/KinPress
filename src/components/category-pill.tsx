@@ -1,24 +1,22 @@
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import type { CategoryRecord } from "@/lib/content";
+import { firstText } from "@/lib/content";
 
 type CategoryPillProps = {
-  name: string
-  slug: string
-}
+  category: CategoryRecord;
+};
 
-export function CategoryPill({ name, slug }: CategoryPillProps) {
+export function CategoryPill({ category }: CategoryPillProps) {
+  const name = firstText(category, ["name"], "Culture");
+  const slug = firstText(category, ["slug"]);
+  const href = slug ? `/categories/${slug}` : "#";
+
   return (
-    <a
-      href={`/categories/${encodeURIComponent(slug)}`}
-      className={cn(
-        "inline-flex max-w-full items-center rounded-full border px-3 py-1 text-xs font-medium leading-none tracking-[0.08em] uppercase",
-        "border-[var(--accent-border)] bg-[var(--accent-bg)] text-[var(--text-h)]",
-        "transition-colors duration-200 hover:border-[var(--accent)] hover:bg-[var(--social-bg)] hover:text-[var(--accent)]",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
-        "sm:text-sm",
-      )}
+    <Link
+      className="rounded-full border border-ink/15 bg-bone px-4 py-2 text-sm font-semibold text-ink transition hover:border-heritage hover:text-heritage"
+      href={href}
     >
-      <span className="truncate">{name}</span>
-    </a>
-  )
+      {name}
+    </Link>
+  );
 }
-

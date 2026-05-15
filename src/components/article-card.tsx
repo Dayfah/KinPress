@@ -1,99 +1,121 @@
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
+import type { ArticleRecord } from "@/lib/content";
+import {
+  firstText,
+  formatPublishedDate,
+  getArticleCategory,
+  getArticleExcerpt,
+  getArticleHref,
+  getArticleImage,
+} from "@/lib/content";
+
+type SupabaseArticleCardProps = {
+  article: ArticleRecord;
+};
+
 export type ArticleCardProps = {
-  id: string;
+  id?: string;
   title: string;
   slug: string;
   subtitle: string;
   coverImageUrl?: string | null;
-  categoryName: string;
-  authorName: string;
+  categoryName?: string;
+  authorName?: string;
   publishedAt: string | Date;
-  isPremium: boolean;
+  isPremium?: boolean;
 };
 
-const publishedDateFormatter = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
+type ArticleCardInput = SupabaseArticleCardProps | ArticleCardProps;
 
-function getArticleHref(slug: string) {
-  return `/articles/${slug.replace(/^\/+/, "")}`;
-}
+function normalizeArticleCardProps(props: ArticleCardInput) {
+  if ("article" in props) {
+    const { article } = props;
 
-function getPublishedDate(publishedAt: string | Date) {
-  const date =
-    publishedAt instanceof Date ? publishedAt : new Date(publishedAt);
-
-  if (Number.isNaN(date.getTime())) {
     return {
-      dateTime: String(publishedAt),
-      label: String(publishedAt),
+      id: article.id,
+      title: firstText(article, ["title"], "Untitled story"),
+      href: getArticleHref(article),
+      image: getArticleImage(article),
+      excerpt: getArticleExcerpt(article),
+      category: getArticleCategory(article),
+      author: firstText(article, ["author_name"]),
+      dateTime: article.published_at ?? undefined,
+      date: formatPublishedDate(article.published_at),
+      isPremium: Boolean(article.is_premium),
     };
   }
 
   return {
-    dateTime: date.toISOString(),
-    label: publishedDateFormatter.format(date),
+    id: props.id,
+    title: props.title,
+    href: `/articles/${props.slug.replace(/^\/+/, "")}`,
+    image: props.coverImageUrl ?? "",
+    excerpt: props.subtitle,
+    category: props.categoryName ?? "",
+    author: props.authorName ?? "",
+    dateTime:
+      props.publishedAt instanceof Date
+        ? props.publishedAt.toISOString()
+        : props.publishedAt,
+    date: formatPublishedDate(
+      props.publishedAt instanceof Date
+        ? props.publishedAt.toISOString()
+        : props.publishedAt,
+    ),
+    isPremium: Boolean(props.isPremium),
   };
 }
 
-export function ArticleCard({
-  id,
-  title,
-  slug,
-  subtitle,
-  coverImageUrl,
-  categoryName,
-  authorName,
-  publishedAt,
-  isPremium,
-}: ArticleCardProps) {
-  const href = getArticleHref(slug);
-  const publishedDate = getPublishedDate(publishedAt);
+export function ArticleCard(props: ArticleCardInput) {
+  const article = normalizeArticleCardProps(props);
 
   return (
     <article
-      data-article-id={id}
-      className="kp-article-card flex h-full flex-col bg-card"
+      data-article-id={article.id}
+      className="group flex h-full flex-col border-t border-ink/15 pt-5"
     >
-      <a
-        href={href}
-        className="flex h-full flex-col text-card-foreground no-underline focus:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
-        aria-label={`Read ${title}`}
-      >
-        {coverImageUrl ? (
-          <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
+      <Link className="grid h-full gap-4" href={article.href}>
+        {article.image ? (
+          <div className="aspect-[4/3] overflow-hidden bg-ink/10">
             <img
-              src={coverImageUrl}
               alt=""
-              className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              src={article.image}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-kinpress-ink/55 via-transparent to-transparent" />
           </div>
         ) : null}
 
-        <div className="kp-article-card-body flex flex-1 flex-col">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="kp-category-pill">{categoryName}</span>
-            {isPremium ? (
-              <span className="kp-premium-badge">KINPRESS+</span>
+        <div className="grid gap-3">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-brown">
+            {article.category ? <span>{article.category}</span> : null}
+            {article.category && article.date ? <span aria-hidden="true">/</span> : null}
+            {article.date ? <time dateTime={article.dateTime}>{article.date}</time> : null}
+            {article.isPremium ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <span>KinPress+</span>
+              </>
             ) : null}
           </div>
 
-          <div className="space-y-3">
-            <h3 className="kp-article-card-title">{title}</h3>
-            <p className="text-base leading-7 text-muted-foreground">
-              {subtitle}
-            </p>
-          </div>
+          <h3 className="font-serif text-2xl leading-tight text-ink transition group-hover:text-heritage">
+            {article.title}
+          </h3>
 
-          <div className="kp-meta mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-2">
-            <span>{authorName}</span>
-            <span aria-hidden="true">/</span>
-            <time dateTime={publishedDate.dateTime}>{publishedDate.label}</time>
-          </div>
+          {article.excerpt ? (
+            <p className="line-clamp-3 text-sm leading-6 text-ink/70">
+              {article.excerpt}
+            </p>
+          ) : null}
+
+          {article.author ? (
+            <p className="mt-auto text-xs font-bold uppercase tracking-[0.18em] text-muted-brown">
+              By {article.author}
+            </p>
+          ) : null}
         </div>
-      </a>
+      </Link>
     </article>
   );
 }

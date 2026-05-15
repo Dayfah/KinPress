@@ -1,99 +1,65 @@
-export type FeaturedArticleProps = {
-  title: string;
-  slug: string;
-  subtitle: string;
-  coverImageUrl: string;
-  categoryName: string;
-  authorName: string;
-  publishedAt: string | Date;
-  isPremium: boolean;
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
+import type { ArticleRecord } from "@/lib/content";
+import {
+  firstText,
+  formatPublishedDate,
+  getArticleCategory,
+  getArticleExcerpt,
+  getArticleHref,
+  getArticleImage,
+} from "@/lib/content";
+
+type FeaturedArticleProps = {
+  article: ArticleRecord;
 };
 
-const publishedDateFormatter = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-function getArticleHref(slug: string) {
-  return `/articles/${slug.replace(/^\/+/, "")}`;
-}
-
-function getPublishedDate(publishedAt: string | Date) {
-  const date =
-    publishedAt instanceof Date ? publishedAt : new Date(publishedAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return {
-      dateTime: String(publishedAt),
-      label: String(publishedAt),
-    };
-  }
-
-  return {
-    dateTime: date.toISOString(),
-    label: publishedDateFormatter.format(date),
-  };
-}
-
-export function FeaturedArticle({
-  title,
-  slug,
-  subtitle,
-  coverImageUrl,
-  categoryName,
-  authorName,
-  publishedAt,
-  isPremium,
-}: FeaturedArticleProps) {
-  const href = getArticleHref(slug);
-  const publishedDate = getPublishedDate(publishedAt);
+export function FeaturedArticle({ article }: FeaturedArticleProps) {
+  const title = firstText(article, ["title"], "Untitled story");
+  const image = getArticleImage(article);
+  const excerpt = getArticleExcerpt(article);
+  const category = getArticleCategory(article);
+  const date = formatPublishedDate(article.published_at);
 
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] bg-neutral-950 text-white shadow-2xl shadow-neutral-950/20">
-      <a
-        href={href}
-        className="relative block min-h-[31rem] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 sm:min-h-[34rem] lg:min-h-[38rem]"
-        aria-label={`Read ${title}`}
-      >
-        <img
-          src={coverImageUrl}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.35),transparent_34rem)]" />
+    <article className="overflow-hidden border-y border-ink bg-bone">
+      <Link className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]" href={getArticleHref(article)}>
+        <div className="flex min-h-[24rem] flex-col justify-between gap-10 p-6 sm:p-8 lg:p-10">
+          <div className="grid gap-5">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-heritage">
+              Featured
+            </p>
 
-        <div className="relative flex min-h-[31rem] flex-col justify-end gap-6 p-6 sm:min-h-[34rem] sm:p-8 lg:min-h-[38rem] lg:p-12">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-neutral-950">
-              {categoryName}
-            </span>
-            {isPremium ? (
-              <span className="rounded-full border border-amber-300/70 bg-amber-300/15 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-amber-100">
-                KINPRESS+
-              </span>
+            <h2 className="max-w-3xl font-serif text-4xl leading-[0.95] text-ink sm:text-5xl lg:text-6xl">
+              {title}
+            </h2>
+
+            {excerpt ? (
+              <p className="max-w-2xl text-base leading-7 text-ink/75 sm:text-lg">
+                {excerpt}
+              </p>
             ) : null}
           </div>
 
-          <div className="max-w-4xl space-y-4">
-            <h2 className="max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl lg:text-7xl">
-              {title}
-            </h2>
-            <p className="max-w-2xl text-base font-medium leading-7 text-neutral-100 sm:text-lg lg:text-xl">
-              {subtitle}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-semibold text-neutral-200 sm:text-base">
-            <span>{authorName}</span>
-            <span aria-hidden="true">/</span>
-            <time dateTime={publishedDate.dateTime}>{publishedDate.label}</time>
+          <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-muted-brown">
+            {category ? <span>{category}</span> : null}
+            {category && date ? <span aria-hidden="true">/</span> : null}
+            {date ? <time dateTime={article.published_at ?? undefined}>{date}</time> : null}
           </div>
         </div>
-      </a>
+
+        {image ? (
+          <div className="min-h-[20rem] bg-ink/10 lg:min-h-full">
+            <img alt="" className="h-full w-full object-cover" src={image} />
+          </div>
+        ) : (
+          <div className="grid min-h-[20rem] place-items-center bg-deep-green p-8 text-center text-bone lg:min-h-full">
+            <span className="max-w-xs font-serif text-3xl leading-tight">
+              Black stories, archived with care.
+            </span>
+          </div>
+        )}
+      </Link>
     </article>
   );
 }
-
-export default FeaturedArticle;
