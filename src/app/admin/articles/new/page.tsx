@@ -32,6 +32,15 @@ type Category = {
   slug: string | null;
 };
 
+type CoverImageValidation =
+  | {
+      extension: string;
+      contentType: string;
+    }
+  | {
+      error: string;
+    };
+
 function textField(formData: FormData, name: string) {
   const value = formData.get(name);
 
@@ -90,7 +99,7 @@ function getContentType(file: File, extension: string) {
   return `image/${extension}`;
 }
 
-function validateCoverImage(file: File) {
+function validateCoverImage(file: File): CoverImageValidation {
   const extension = getFileExtension(file.name);
   const contentType = getContentType(file, extension);
 
