@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 39% 94%;
+    --foreground: 0 0% 7%;
+    --card: 36 39% 94%;
+    --card-foreground: 0 0% 7%;
+    --popover: 36 39% 94%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 5 60% 45%;
+    --primary-foreground: 36 39% 94%;
+    --secondary: 142 32% 18%;
+    --secondary-foreground: 36 39% 94%;
+    --muted: 30 27% 88%;
+    --muted-foreground: 26 28% 37%;
+    --accent: 43 53% 54%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 5 60% 45%;
+    --destructive-foreground: 36 39% 94%;
+    --border: 26 28% 37% / 0.22;
+    --input: 26 28% 37% / 0.26;
+    --ring: 43 53% 54%;
+    --radius: 0.5rem;
+    --font-sans: "Inter";
+    --font-serif: "Georgia";
+
+    --kinpress-ink: #111111;
+    --kinpress-bone: #f5f0e8;
+    --kinpress-heritage: #b83a2d;
+    --kinpress-green: #1f3d2b;
+    --kinpress-gold: #c8a24a;
+    --kinpress-brown: #7a5c45;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background: var(--kinpress-ink);
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-family: var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif;
+    background-image:
+      radial-gradient(
+        circle at top left,
+        rgba(200, 162, 74, 0.16),
+        transparent 28rem
+      ),
+      linear-gradient(rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 17, 17, 0.025) 1px, transparent 1px);
+    background-size:
+      auto,
+      4rem 4rem,
+      4rem 4rem;
+  }
+
+  ::selection {
+    background: var(--kinpress-gold);
+    color: var(--kinpress-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif tracking-editorial text-balance;
+  }
+
+  p {
+    @apply leading-7;
+  }
+
+  a {
+    @apply underline-offset-4 transition-colors;
+  }
+
+  a:hover {
+    @apply text-primary;
+  }
+}
+
+@layer components {
+  .kp-page-container {
+    @apply container mx-auto w-full px-5 sm:px-6 lg:px-8;
+  }
+
+  .kp-section {
+    @apply py-14 sm:py-20 lg:py-28;
+  }
+
+  .kp-section-tight {
+    @apply py-10 sm:py-14 lg:py-16;
+  }
+
+  .kp-eyebrow {
+    @apply text-xs font-bold uppercase tracking-wide-label text-primary;
+  }
+
+  .kp-editorial-headline {
+    @apply max-w-5xl font-serif text-5xl font-semibold leading-none tracking-editorial text-foreground text-balance sm:text-6xl lg:text-8xl;
+  }
+
+  .kp-editorial-subhead {
+    @apply max-w-3xl text-lg leading-8 text-muted-foreground sm:text-xl;
+  }
+
+  .kp-article-card {
+    @apply group overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-editorial transition duration-300 hover:-translate-y-1 hover:border-accent/70 hover:shadow-gold-ring;
+  }
+
+  .kp-article-card-body {
+    @apply space-y-4 p-6 sm:p-7;
+  }
+
+  .kp-article-card-title {
+    @apply font-serif text-2xl font-semibold leading-tight tracking-editorial text-card-foreground transition-colors group-hover:text-primary sm:text-3xl;
+  }
+
+  .kp-category-pill {
+    @apply inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wide-label text-primary;
+  }
+
+  .kp-category-pill-green {
+    @apply border-secondary/30 bg-secondary/10 text-secondary;
+  }
+
+  .kp-premium-badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-accent/45 bg-accent/15 px-3 py-1 text-xs font-bold uppercase tracking-wide-label text-accent-foreground shadow-gold-ring;
+  }
+
+  .kp-meta {
+    @apply text-sm font-medium uppercase tracking-[0.12em] text-muted-foreground;
+  }
+
+  .kp-button {
+    @apply inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-primary-foreground transition duration-200 hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .kp-button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .kp-button-ghost {
+    @apply border border-border bg-transparent text-foreground hover:border-accent hover:bg-accent/15 hover:text-foreground;
+  }
+
+  .kp-form {
+    @apply rounded-lg border border-border bg-card p-6 shadow-editorial sm:p-8;
+  }
+
+  .kp-form-grid {
+    @apply grid gap-5;
+  }
+
+  .kp-field {
+    @apply grid gap-2;
+  }
+
+  .kp-label {
+    @apply text-xs font-bold uppercase tracking-wide-label text-muted-foreground;
+  }
+
+  .kp-input,
+  .kp-textarea {
+    @apply w-full rounded-md border border-input bg-background px-4 py-3 text-base text-foreground shadow-sm transition placeholder:text-muted-foreground/70 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .kp-textarea {
+    @apply min-h-36 resize-y;
+  }
+}
