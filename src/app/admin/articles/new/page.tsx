@@ -139,7 +139,7 @@ async function uploadCoverImage(
   file: File,
   userId: string,
   slug: string,
-) {
+): Promise<{ publicUrl: string } | { error: string }> {
   const validation = validateCoverImage(file);
 
   if ("error" in validation) {
