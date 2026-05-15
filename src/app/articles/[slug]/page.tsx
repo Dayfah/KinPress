@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import SaveArticleButton from "@/components/save-article-button";
 import { getPublishedArticleBySlug, type Article } from "@/lib/articles";
 
 type ArticlePageProps = {
@@ -77,6 +78,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   {formatPublishedDate(article.publishedAt)}
                 </time>
               ) : null}
+            </div>
+
+            <div className="article-actions">
+              <SaveArticleButton
+                articleId={article.id}
+                articlePath={`/articles/${article.slug}`}
+              />
             </div>
           </header>
 
