@@ -94,7 +94,10 @@ export default async function SaveArticleButton({
     <form action={toggleSavedArticle}>
       <input type="hidden" name="articleId" value={articleId} />
       <input type="hidden" name="articlePath" value={articlePath} />
-      <button className="save-article-button" type="submit">
+      <button
+        className="inline-flex rounded-full bg-ink px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-bone transition hover:bg-heritage"
+        type="submit"
+      >
         {isSaved ? "Saved" : "Save"}
       </button>
     </form>

@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KinPress",
-  description: "Stories for the Black community.",
+  title: "KinPress | Black news, culture, and community",
+  description:
+    "A premium Black-centered news, culture, history, politics, business, arts, opinion, and community platform.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: ReactNode;
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
