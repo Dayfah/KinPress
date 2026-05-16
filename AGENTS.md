@@ -2,21 +2,28 @@
 
 ## Cursor Cloud specific instructions
 
-This repository ("KinPress — The Black Community") is currently an empty scaffold with only a `README.md`. There is no application code, no dependency manifest, no build system, and no services to run.
+This repository (`KinPress — The Black Community`) is an active Next.js application.
 
 ### Current state
 
-- **Language/Framework:** Not yet chosen.
-- **Dependencies:** None.
-- **Services:** None.
-- **Tests:** None.
-- **Lint:** None.
+- **Language/Framework:** Next.js (App Router), React, TypeScript
+- **Styling:** Tailwind CSS v4
+- **Backend services:** Supabase (Auth, Postgres, Storage)
+- **Deployment target:** Vercel
+- **Tests:** No dedicated test suite yet
+- **Lint/Type checks:** ESLint + TypeScript (`npm run lint`, `npm run typecheck`)
 
 ### Development environment
 
-No setup steps are required at this time. Once code is added to the repository, this section should be updated with:
+1. Install dependencies with `npm install`.
+2. Create `.env.local` from `.env.example` and fill Supabase values.
+3. Run local development with `npm run dev`.
 
-- How to install dependencies
-- How to run the dev server
-- How to run tests and lint
-- Any environment variables or secrets required
+### Required environment variables
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Optional compatibility fallback:
+
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
