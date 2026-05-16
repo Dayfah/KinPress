@@ -5,7 +5,7 @@ import { AuthForm } from "@/components/auth-form";
 export default function LoginPage() {
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-lg px-5 py-12 sm:px-8">
+      <div className="kp-shell max-w-lg py-12 sm:py-16">
         <AuthForm mode="login" />
         <p className="mt-6 text-center text-sm text-ink/70">
           New to KinPress?{" "}

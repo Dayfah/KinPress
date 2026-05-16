@@ -73,7 +73,7 @@ export function ArticleCard(props: ArticleCardInput) {
   return (
     <article
       data-article-id={article.id}
-      className="group flex h-full flex-col border-t border-ink/15 pt-5"
+      className="group flex h-full flex-col rounded-xl border border-ink/12 bg-paper p-4 transition hover:-translate-y-0.5 hover:border-ink/25"
     >
       <Link className="grid h-full gap-4" href={article.href}>
         {article.image ? (

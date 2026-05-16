@@ -65,8 +65,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
-      <section className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-8 sm:px-8 lg:px-10">
-        <section className="grid gap-8 py-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+      <section className="kp-shell flex flex-col gap-12 py-8 sm:py-10">
+        <section className="grid gap-8 border-b border-ink/15 pb-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
           <div className="grid gap-5">
             <p className="text-xs font-black uppercase tracking-[0.28em] text-heritage">
               News / Culture / Archive
@@ -83,6 +83,24 @@ export default async function Home() {
               for tomorrow.
             </p>
           </div>
+        </section>
+
+        <section className="grid gap-4 rounded-2xl border border-ink/15 bg-paper p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-brown">
+              In focus
+            </p>
+            <p className="mt-2 text-sm leading-7 text-ink/75 sm:text-base">
+              Reporting and conversations across politics, history, business, labor,
+              arts, and community life.
+            </p>
+          </div>
+          <Link
+            className="inline-flex w-fit rounded-full border border-ink/20 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-ink transition hover:border-heritage hover:text-heritage"
+            href="/search"
+          >
+            Explore stories
+          </Link>
         </section>
 
         {featuredArticle ? (
@@ -114,8 +132,8 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-sm leading-6 text-ink/65">
-              Categories will appear here once they are active.
+            <p className="rounded-lg border border-dashed border-ink/25 bg-paper px-4 py-3 text-sm leading-6 text-ink/70">
+              Categories are being curated. Check back as sections are published.
             </p>
           )}
         </section>
@@ -138,9 +156,9 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <div className="border border-dashed border-ink/30 bg-bone/75 p-10 text-center">
+            <div className="border border-dashed border-ink/30 bg-paper p-10 text-center">
               <p className="font-serif text-3xl text-ink">
-                No stories published yet. Check back soon.
+                The first stories are on deck. Check back soon.
               </p>
             </div>
           )}
