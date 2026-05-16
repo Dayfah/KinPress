@@ -66,16 +66,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-8 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between border-b border-ink pb-5">
-          <Link className="font-serif text-3xl font-bold tracking-tight" href="/">
-            KinPress
-          </Link>
-          <p className="hidden text-xs font-bold uppercase tracking-[0.24em] text-muted-brown sm:block">
-            Black-centered journalism
-          </p>
-        </header>
-
-        <section className="grid gap-8 py-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+        <section className="grid gap-8 py-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
           <div className="grid gap-5">
             <p className="text-xs font-black uppercase tracking-[0.28em] text-heritage">
               News / Culture / Archive
