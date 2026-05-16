@@ -51,6 +51,12 @@ export async function SiteHeader() {
           })}
           <Link
             className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
+            href="/search"
+          >
+            Search
+          </Link>
+          <Link
+            className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
             href="/saved"
           >
             Saved
