@@ -43,12 +43,20 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form className="kp-form mx-auto max-w-md rounded-2xl" onSubmit={handleSubmit}>
+    <form
+      className="kp-form mx-auto max-w-md rounded-2xl border-ink/20 bg-paper p-6 sm:p-8"
+      onSubmit={handleSubmit}
+    >
       <div>
         <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
         <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
           {isSignup ? "Join KinPress" : "Log in to KinPress"}
         </h1>
+        <p className="mt-3 text-sm leading-6 text-ink/70">
+          {isSignup
+            ? "Create your reader profile to save stories and join the conversation."
+            : "Continue to your saved stories, comments, and community profile."}
+        </p>
       </div>
       <label className="kp-field mt-8 text-sm font-bold text-ink">
         Email

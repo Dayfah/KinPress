@@ -21,15 +21,28 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink/15 bg-bone/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-        <Link
-          className="font-serif text-2xl font-bold tracking-tight text-ink"
-          href="/"
-        >
-          KinPress
-        </Link>
-        <nav className="hidden flex-wrap items-center justify-end gap-5 md:flex">
+    <header className="sticky top-0 z-40 border-b border-ink/15 bg-paper/95 backdrop-blur">
+      <div className="kp-shell py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-4">
+          <Link className="font-serif text-2xl font-bold tracking-tight text-ink" href="/">
+            KinPress
+          </Link>
+          <p className="hidden text-[11px] font-black uppercase tracking-[0.2em] text-muted-brown sm:block">
+            Black News · Culture · Community
+          </p>
+          <div className="flex shrink-0 items-center gap-2.5">
+            <Link className="text-sm font-bold text-ink/80 transition hover:text-ink" href="/login">
+              Log in
+            </Link>
+            <Link
+              className="rounded-full bg-ink px-4 py-2 text-xs font-black uppercase tracking-[0.13em] text-bone transition hover:bg-heritage"
+              href="/signup"
+            >
+              Join
+            </Link>
+          </div>
+        </div>
+        <nav className="mt-3 flex flex-wrap items-center gap-3 border-t border-ink/10 pt-3 md:gap-4">
           {navCategories.map((category, index) => {
             const slug =
               typeof category.slug === "string" ? category.slug : null;
@@ -39,7 +52,7 @@ export async function SiteHeader() {
 
             return (
               <Link
-                className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
+                className="rounded-full border border-ink/15 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-muted-brown transition hover:border-ink/35 hover:text-ink"
                 href={`/categories/${slug}`}
                 key={String(category.id ?? slug ?? index)}
               >
@@ -50,38 +63,30 @@ export async function SiteHeader() {
             );
           })}
           <Link
-            className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
+            className="text-xs font-black uppercase tracking-[0.14em] text-muted-brown transition hover:text-ink"
             href="/search"
           >
             Search
           </Link>
           <Link
-            className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
+            className="text-xs font-black uppercase tracking-[0.14em] text-muted-brown transition hover:text-ink"
             href="/saved"
           >
             Saved
           </Link>
           <Link
-            className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown transition hover:text-ink"
+            className="text-xs font-black uppercase tracking-[0.14em] text-muted-brown transition hover:text-ink"
             href="/profile"
           >
             Profile
           </Link>
+          <Link
+            className="text-xs font-black uppercase tracking-[0.14em] text-muted-brown transition hover:text-ink"
+            href="/admin"
+          >
+            Admin
+          </Link>
         </nav>
-        <div className="flex shrink-0 items-center gap-3">
-          <Link
-            className="text-sm font-bold text-ink/80 transition hover:text-ink"
-            href="/login"
-          >
-            Log in
-          </Link>
-          <Link
-            className="rounded-full bg-ink px-4 py-2 text-sm font-black uppercase tracking-[0.12em] text-bone transition hover:bg-heritage"
-            href="/signup"
-          >
-            Join
-          </Link>
-        </div>
       </div>
     </header>
   );
