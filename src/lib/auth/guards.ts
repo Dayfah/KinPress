@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type ProfileRole = {
   role: string | null;
+  display_name: string | null;
+  username: string | null;
 };
 
 export async function requireAuthenticatedUser() {
@@ -26,7 +28,7 @@ export async function requireAuthenticatedUser() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, display_name, username")
     .eq("id", user.id)
     .maybeSingle<ProfileRole>();
 

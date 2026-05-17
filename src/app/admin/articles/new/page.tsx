@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireEditorOrAdmin } from "@/lib/auth/guards";
+import { requireAdmin } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SubmitArticleButton } from "./submit-button";
 
@@ -179,42 +179,14 @@ async function uploadCoverImage(
   return { publicUrl };
 }
 
-async function loadCurrentProfile() {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    redirect("/login");
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("display_name, username, role")
-    .eq("id", user.id)
-    .maybeSingle<Profile>();
-
-  if (error) {
-    throw new Error(`Unable to load profile: ${error.message}`);
-  }
-
-  return { supabase, user, profile };
-}
-
 async function createArticle(formData: FormData) {
   "use server";
 
-  const { supabase, user, profile } = await loadCurrentProfile();
-
-  if (!canManageArticles(profile)) {
-    messageRedirect("You do not have permission.");
-  }
+  const {
+    supabase,
+    user,
+    profile: editorProfile,
+  } = await requireAdmin();
 
   const title = textField(formData, "title");
   const slug = textField(formData, "slug");
@@ -272,7 +244,7 @@ async function createArticle(formData: FormData) {
     status,
     published_at: publishedAt,
     author_id: user.id,
-    author_name: profileAuthorName(profile, user.email),
+    author_name: profileAuthorName(editorProfile, user.email),
   });
 
   if (error) {
@@ -290,22 +262,7 @@ export default async function NewArticlePage({
   searchParams,
 }: AdminArticlePageProps) {
   const params = await searchParams;
-  const { supabase, profile } = await loadCurrentProfile();
-
-  if (!canManageArticles(profile)) {
-    return (
-      <main className="min-h-screen px-5 py-10 sm:px-8">
-        <section className="mx-auto max-w-3xl border border-ink/15 bg-bone p-8 shadow-[0_24px_80px_-48px_rgba(17,17,17,0.7)]">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-heritage">
-            Admin access
-          </p>
-          <h1 className="mt-4 font-serif text-4xl leading-tight text-ink">
-            You do not have permission.
-          </h1>
-        </section>
-      </main>
-    );
-  }
+  const { supabase } = await requireAdmin();
 
   const { data: categories, error: categoriesError } = await supabase
     .from("categories")

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured, SUPABASE_ENV_SETUP_HINT } from "@/lib/supabase/env";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { AUTH_UNAVAILABLE_MESSAGE } from "@/lib/auth/messages";
 import { cn } from "@/lib/utils";
 
 type SignOutButtonProps = {
@@ -26,7 +27,7 @@ export function SignOutButton({
     const supabase = createClient();
 
     if (!supabase) {
-      setMessage(SUPABASE_ENV_SETUP_HINT);
+      setMessage(AUTH_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -44,7 +45,7 @@ export function SignOutButton({
   return (
     <div className="flex flex-col gap-2 sm:items-end">
       <button
-        className={cn("kp-btn-outline w-full sm:w-auto", className)}
+        className={cn("kp-auth-link-outline w-full sm:w-auto", className)}
         disabled={!configured}
         onClick={handleSignOut}
         type="button"

@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-import { requireEditorOrAdmin } from "@/lib/auth/guards";
+import { requireAdmin } from "@/lib/auth/guards";
 import { getArticlesForAdmin } from "@/lib/kinpress-articles";
 import { formatPublishedDate } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminArticlesPage() {
-  await requireEditorOrAdmin();
+  await requireAdmin();
   const articles = await getArticlesForAdmin();
 
   return (

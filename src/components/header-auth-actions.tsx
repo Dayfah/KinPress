@@ -27,13 +27,13 @@ export function HeaderAuthActions({
   const ghost = cn(
     isDrawer
       ? "inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-[15px] font-semibold text-white/90 transition hover:bg-white/10"
-      : "kp-btn-ghost text-sm",
+      : "kp-auth-link-ghost text-sm",
     linkClassName,
   );
   const primary = cn(
     isDrawer
       ? "inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-heritage px-4 text-[15px] font-semibold text-white transition hover:bg-heritage/90"
-      : "kp-btn-primary text-xs",
+      : "kp-auth-link-primary text-xs",
     linkClassName,
   );
   const signOutClass = cn(

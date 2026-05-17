@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/sign-out-button";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
-import { ensureUserProfile } from "@/lib/auth/profile";
+import { requireAuthenticatedUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type Profile = {
@@ -79,9 +79,9 @@ async function updateProfile(formData: FormData) {
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const params = await searchParams;
-  const supabase = await createSupabaseServerClient();
+  const configured = await createSupabaseServerClient();
 
-  if (!supabase) {
+  if (!configured) {
     return (
       <main className="min-h-screen min-w-0 overflow-x-hidden">
         <section className="kp-page-container max-w-lg py-12 sm:py-16">
@@ -91,15 +91,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     );
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  await ensureUserProfile(supabase, user);
+  const { supabase, user } = await requireAuthenticatedUser();
 
   const { data: profile, error } = await supabase
     .from("profiles")
@@ -139,6 +131,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         {params?.error ? (
           <p className="mb-6 rounded-md border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-medium text-primary">
             {params.error}
+          </p>
+        ) : null}
+
+        {!profile ? (
+          <p className="mb-6 rounded-md border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            Your reader profile is being set up. Save your details below to finish.
           </p>
         ) : null}
 

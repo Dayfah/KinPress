@@ -259,6 +259,116 @@ svg {
   background: hsl(var(--card) / 0.55);
 }
 
+.kp-auth-card {
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 1.5rem;
+  box-shadow: 0 24px 80px -48px rgba(17, 17, 17, 0.12);
+}
+
+@media (min-width: 640px) {
+  .kp-auth-card {
+    padding: 2rem;
+  }
+}
+
+.kp-auth-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kp-auth-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.kp-auth-input:focus {
+  border-color: var(--heritage-red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--heritage-red) 20%, transparent);
+}
+
+.kp-auth-error {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--heritage-red) 35%, transparent);
+  background: color-mix(in srgb, var(--heritage-red) 10%, transparent);
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+}
+
+.kp-auth-link-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 0.5rem 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.kp-auth-link-ghost:hover {
+  border-color: var(--heritage-red);
+  color: var(--heritage-red);
+}
+
+.kp-auth-link-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--heritage-red);
+  color: var(--bone-white);
+  padding: 0.55rem 1rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.kp-auth-link-primary:hover {
+  background: color-mix(in srgb, var(--heritage-red) 88%, black);
+  color: var(--bone-white);
+}
+
+.kp-auth-link-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: transparent;
+  color: hsl(var(--foreground));
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.kp-auth-link-outline:hover {
+  border-color: var(--heritage-red);
+  color: var(--heritage-red);
+}
+
 .kp-icon-button {
   display: inline-flex;
   align-items: center;

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 
+import { AuthShell } from "@/components/auth/auth-shell";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
+import { getServerAuthSession } from "@/lib/auth/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +24,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerAuthSession();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -29,14 +33,19 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-bone text-ink antialiased">
         <ThemeProvider>
-          <SiteHeader />
-          <div className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
-            {children}
-          </div>
-          <div className="hidden md:block">
-            <SiteFooter />
-          </div>
-          <MobileBottomNav />
+          <AuthShell
+            initialProfile={session?.profile ?? null}
+            initialUser={session?.user ?? null}
+          >
+            <SiteHeader />
+            <div className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
+              {children}
+            </div>
+            <div className="hidden md:block">
+              <SiteFooter />
+            </div>
+            <MobileBottomNav />
+          </AuthShell>
         </ThemeProvider>
       </body>
     </html>

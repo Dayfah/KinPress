@@ -3,9 +3,19 @@ export type PublicSupabaseEnv = {
   anonKey: string;
 };
 
-/** Developer-facing copy when public Supabase env vars are missing at build/runtime. */
-export const SUPABASE_ENV_SETUP_HINT =
-  "Authentication is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project settings (Environment Variables), then redeploy.";
+import {
+  AUTH_DEV_SETUP_HINT,
+  AUTH_UNAVAILABLE_MESSAGE,
+} from "@/lib/auth/messages";
+
+/** User-facing message when auth is unavailable (safe for production). */
+export const SUPABASE_ENV_USER_MESSAGE = AUTH_UNAVAILABLE_MESSAGE;
+
+/** Developer setup hint — show only in development UI. */
+export const SUPABASE_ENV_DEV_HINT = AUTH_DEV_SETUP_HINT;
+
+/** @deprecated Use SUPABASE_ENV_USER_MESSAGE or SUPABASE_ENV_DEV_HINT */
+export const SUPABASE_ENV_SETUP_HINT = AUTH_UNAVAILABLE_MESSAGE;
 
 /**
  * Reads public Supabase credentials from NEXT_PUBLIC_* env vars.
