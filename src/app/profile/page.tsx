@@ -1,7 +1,9 @@
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
+
+import { SignOutButton } from "@/components/sign-out-button";
+import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type Profile = {
   display_name: string | null;
@@ -18,41 +20,6 @@ type ProfilePageProps = {
     saved?: string;
   }>;
 };
-
-function requiredEnv(name: string) {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-}
-
-async function createSupabaseServerClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server components cannot set cookies; middleware can refresh them.
-          }
-        },
-      },
-    },
-  );
-}
 
 function formValue(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -79,6 +46,11 @@ async function updateProfile(formData: FormData) {
   "use server";
 
   const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    redirect("/login?error=supabase_config");
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -107,6 +79,17 @@ async function updateProfile(formData: FormData) {
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return (
+      <main className="min-h-screen min-w-0 overflow-x-hidden">
+        <section className="kp-page-container max-w-lg py-12 sm:py-16">
+          <SupabaseConfigNotice title="Profile unavailable" />
+        </section>
+      </main>
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -128,17 +111,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   }
 
   return (
-    <main className="kp-section-tight">
+    <main className="kp-section-tight min-w-0 overflow-x-hidden">
       <div className="kp-page-container max-w-4xl">
-        <div className="mb-8 space-y-3">
-          <p className="kp-eyebrow">Account</p>
-          <h1 className="font-serif text-4xl font-semibold tracking-editorial text-foreground sm:text-5xl">
-            Your profile
-          </h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Keep your public KinPress identity current for comments,
-            submissions, and membership access.
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 space-y-3">
+            <p className="kp-eyebrow">Account</p>
+            <h1 className="kp-heading font-semibold tracking-editorial text-foreground">
+              Your profile
+            </h1>
+            <p className="max-w-2xl text-muted-foreground">
+              Keep your public KinPress identity current for comments,
+              submissions, and membership access.
+            </p>
+          </div>
+          <SignOutButton />
         </div>
 
         {params?.saved ? (

@@ -71,6 +71,11 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
   }
 
   const supabase = await createClient();
+
+  if (!supabase) {
+    redirect("/login");
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -104,29 +109,33 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const [article, supabase] = await Promise.all([
-    getPublishedArticleBySlug(slug),
-    createClient(),
-  ]);
+  const article = await getPublishedArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  let user = null;
+  let comments: VisibleComment[] = [];
 
-  const { data: comments, error: commentsError } = await supabase
-    .from("comments")
-    .select("id, user_name, user_avatar_url, comment_text, created_at")
-    .eq("article_id", article.id)
-    .eq("status", "visible")
-    .order("created_at", { ascending: true })
-    .returns<VisibleComment[]>();
+  if (supabase) {
+    const userResult = await supabase.auth.getUser();
+    user = userResult.data.user;
 
-  if (commentsError) {
-    throw new Error(`Unable to load comments: ${commentsError.message}`);
+    const { data, error: commentsError } = await supabase
+      .from("comments")
+      .select("id, user_name, user_avatar_url, comment_text, created_at")
+      .eq("article_id", article.id)
+      .eq("status", "visible")
+      .order("created_at", { ascending: true })
+      .returns<VisibleComment[]>();
+
+    if (commentsError) {
+      throw new Error(`Unable to load comments: ${commentsError.message}`);
+    }
+
+    comments = data ?? [];
   }
 
   return (

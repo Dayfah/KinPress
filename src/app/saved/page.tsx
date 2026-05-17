@@ -1,12 +1,24 @@
 import { redirect } from "next/navigation";
+
 import { ArticleCard } from "@/components/article-card";
+import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { getSavedArticlesForUser } from "@/lib/articles";
-import { createClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function SavedArticlesPage() {
-  const supabase = await createClient();
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return (
+      <main className="min-h-screen min-w-0 overflow-x-hidden">
+        <section className="kp-page-container max-w-lg py-12 sm:py-16">
+          <SupabaseConfigNotice title="Saved articles unavailable" />
+        </section>
+      </main>
+    );
+  }
 
   const {
     data: { user },
@@ -19,10 +31,10 @@ export default async function SavedArticlesPage() {
   const articles = await getSavedArticlesForUser(user.id);
 
   return (
-    <main className="kp-section-tight">
+    <main className="min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-page-container max-w-5xl space-y-5">
         <p className="kp-eyebrow">Saved articles</p>
-        <h1 className="font-serif text-5xl font-semibold leading-none tracking-editorial text-foreground sm:text-6xl">
+        <h1 className="kp-heading font-semibold tracking-editorial text-foreground">
           Your reading list
         </h1>
         <p className="max-w-2xl text-lg leading-8 text-ink/70">

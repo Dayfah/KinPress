@@ -88,6 +88,10 @@ export const getPublishedArticleBySlug = cache(async function getPublishedArticl
 ): Promise<Article | null> {
   const supabase = await createClient();
 
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("articles")
     .select(
@@ -128,6 +132,10 @@ export async function getSavedArticlesForUser(
   userId: string,
 ): Promise<ArticleSummary[]> {
   const supabase = await createClient();
+
+  if (!supabase) {
+    return [];
+  }
 
   const { data, error } = await supabase
     .from("saved_articles")

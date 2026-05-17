@@ -19,6 +19,10 @@ async function toggleSavedArticle(formData: FormData) {
 
   const supabase = await createClient();
 
+  if (!supabase) {
+    redirect("/login");
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -68,26 +72,27 @@ export default async function SaveArticleButton({
   articlePath,
 }: SaveArticleButtonProps) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   let isSaved = false;
 
-  if (user) {
-    const { data, error } = await supabase
-      .from("saved_articles")
-      .select("article_id")
-      .eq("user_id", user.id)
-      .eq("article_id", articleId)
-      .maybeSingle();
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (error && error.code !== "PGRST116") {
-      throw new Error(`Unable to check saved article: ${error.message}`);
+    if (user) {
+      const { data, error } = await supabase
+        .from("saved_articles")
+        .select("article_id")
+        .eq("user_id", user.id)
+        .eq("article_id", articleId)
+        .maybeSingle();
+
+      if (error && error.code !== "PGRST116") {
+        throw new Error(`Unable to check saved article: ${error.message}`);
+      }
+
+      isSaved = Boolean(data);
     }
-
-    isSaved = Boolean(data);
   }
 
   return (

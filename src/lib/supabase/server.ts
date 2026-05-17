@@ -1,5 +1,8 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { getPublicSupabaseEnv } from "@/lib/supabase/env";
 
 const globalForSupabaseEnv = globalThis as {
   __kinpressMissingSupabaseEnvLogged?: boolean;
@@ -14,25 +17,22 @@ function warnMissingSupabaseEnvOnce() {
 
   if (process.env.NODE_ENV === "development") {
     console.warn(
-      "[KinPress] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Server data loaders that use createSupabaseServerClient() will return empty results.",
+      "[KinPress] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Supabase-backed routes will degrade until env vars are set.",
     );
   }
 }
 
-export async function createSupabaseServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+export async function createSupabaseServerClient(): Promise<SupabaseClient | null> {
+  const env = getPublicSupabaseEnv();
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!env) {
     warnMissingSupabaseEnvOnce();
     return null;
   }
 
   const cookieStore = await cookies();
 
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  return createServerClient(env.url, env.anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -43,19 +43,14 @@ export async function createSupabaseServerClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // Server components cannot set cookies; route handlers can.
+          // Server components cannot set cookies; route handlers and middleware can.
         }
       },
     },
   });
 }
 
-export async function createClient() {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    throw new Error("Missing Supabase environment variables.");
-  }
-
-  return supabase;
+/** Returns a Supabase server client or null when env vars are missing (no throw). */
+export async function createClient(): Promise<SupabaseClient | null> {
+  return createSupabaseServerClient();
 }
