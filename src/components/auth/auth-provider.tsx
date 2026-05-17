@@ -108,13 +108,8 @@ export function AuthProvider({
     const supabase = createClient();
 
     if (!supabase) {
-      void Promise.resolve().then(() => {
-        setIsLoading(false);
-      });
       return;
     }
-
-    void refresh();
 
     const {
       data: { subscription },
@@ -128,7 +123,7 @@ export function AuthProvider({
     return () => {
       subscription.unsubscribe();
     };
-  }, [configured, refresh, syncProfile]);
+  }, [configured, syncProfile]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
