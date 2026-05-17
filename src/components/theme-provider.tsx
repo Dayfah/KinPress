@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 type Theme = "light" | "dark";
@@ -19,43 +19,55 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = "kinpress-theme";
+const THEME_CHANGE_EVENT = "kinpress-theme-change";
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
 }
 
+function readTheme(): Theme {
+  const stored = localStorage.getItem(STORAGE_KEY);
+
+  if (stored === "dark" || stored === "light") {
+    return stored;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function subscribe(onStoreChange: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const handleChange = () => onStoreChange();
+
+  window.addEventListener(THEME_CHANGE_EVENT, handleChange);
+  media.addEventListener("change", handleChange);
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, handleChange);
+    media.removeEventListener("change", handleChange);
+  };
+}
+
+function getServerSnapshot(): Theme {
+  return "light";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [ready, setReady] = useState(false);
+  const theme = useSyncExternalStore(subscribe, readTheme, getServerSnapshot);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial: Theme =
-      stored === "dark" || stored === "light"
-        ? stored
-        : prefersDark
-          ? "dark"
-          : "light";
-
-    setTheme(initial);
-    applyTheme(initial);
-    setReady(true);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: Theme = current === "light" ? "dark" : "light";
-      localStorage.setItem(STORAGE_KEY, next);
-      applyTheme(next);
-      return next;
-    });
-  }, []);
+    const next: Theme = theme === "light" ? "dark" : "light";
+    localStorage.setItem(STORAGE_KEY, next);
+    applyTheme(next);
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+  }, [theme]);
 
-  const value = useMemo(
-    () => ({ theme: ready ? theme : "light", toggleTheme }),
-    [ready, theme, toggleTheme],
-  );
+  const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
