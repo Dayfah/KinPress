@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { Menu } from "lucide-react";
 
 import { KinPressLogo } from "@/components/kinpress-logo";
 import { MastheadMobileMenu } from "@/components/masthead-mobile-menu";
@@ -47,6 +49,19 @@ export async function SiteHeader() {
   );
 }
 
+function MobileMenuFallback() {
+  return (
+    <button
+      aria-hidden
+      className="kp-icon-button pointer-events-none opacity-60 md:hidden"
+      tabIndex={-1}
+      type="button"
+    >
+      <Menu className="size-5" />
+    </button>
+  );
+}
+
 function HeaderTopRow({
   isLoggedIn,
   showAdmin,
@@ -67,7 +82,9 @@ function HeaderTopRow({
           isLoggedIn={isLoggedIn}
           linkClassName="inline-flex"
         />
-        <MastheadMobileMenu isLoggedIn={isLoggedIn} showAdmin={showAdmin} />
+        <Suspense fallback={<MobileMenuFallback />}>
+          <MastheadMobileMenu isLoggedIn={isLoggedIn} showAdmin={showAdmin} />
+        </Suspense>
       </div>
     </div>
   );

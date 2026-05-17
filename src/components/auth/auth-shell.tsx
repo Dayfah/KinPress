@@ -1,12 +1,11 @@
 "use client";
 
 import { AuthProvider } from "@/components/auth/auth-provider";
-import type { AuthProfile } from "@/lib/auth/session";
-import type { User } from "@supabase/supabase-js";
+import type { AuthProfile, ClientAuthUser } from "@/lib/auth/session";
 
 type AuthShellProps = {
   children: React.ReactNode;
-  initialUser: User | null;
+  initialUser: ClientAuthUser | null;
   initialProfile: AuthProfile | null;
 };
 

@@ -10,12 +10,12 @@ import {
   useState,
 } from "react";
 
-import type { AuthProfile } from "@/lib/auth/session";
+import type { AuthProfile, ClientAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export type AuthContextValue = {
-  user: User | null;
+  user: ClientAuthUser | null;
   profile: AuthProfile | null;
   isLoading: boolean;
   isLoggedIn: boolean;
@@ -28,11 +28,22 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 type AuthProviderProps = {
   children: React.ReactNode;
-  initialUser?: User | null;
+  initialUser?: ClientAuthUser | null;
   initialProfile?: AuthProfile | null;
 };
 
-async function fetchProfile(userId: string): Promise<AuthProfile | null> {
+function toClientUser(user: User | null): ClientAuthUser | null {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? null,
+  };
+}
+
+async function fetchProfile(): Promise<AuthProfile | null> {
   const response = await fetch("/api/auth/profile", { cache: "no-store" });
 
   if (!response.ok) {
@@ -49,17 +60,17 @@ export function AuthProvider({
   initialProfile = null,
 }: AuthProviderProps) {
   const configured = isSupabaseConfigured();
-  const [user, setUser] = useState<User | null>(initialUser);
+  const [user, setUser] = useState<ClientAuthUser | null>(initialUser);
   const [profile, setProfile] = useState<AuthProfile | null>(initialProfile);
-  const [isLoading, setIsLoading] = useState(configured && !initialUser);
+  const [isLoading, setIsLoading] = useState(() => configured && !initialUser);
 
-  const syncProfile = useCallback(async (nextUser: User | null) => {
+  const syncProfile = useCallback(async (nextUser: ClientAuthUser | null) => {
     if (!nextUser) {
       setProfile(null);
       return;
     }
 
-    const nextProfile = await fetchProfile(nextUser.id);
+    const nextProfile = await fetchProfile();
     setProfile(nextProfile);
   }, []);
 
@@ -84,21 +95,22 @@ export function AuthProvider({
       data: { user: nextUser },
     } = await supabase.auth.getUser();
 
-    setUser(nextUser ?? null);
-    await syncProfile(nextUser ?? null);
+    setUser(toClientUser(nextUser));
+    await syncProfile(toClientUser(nextUser));
     setIsLoading(false);
   }, [configured, syncProfile]);
 
   useEffect(() => {
     if (!configured) {
-      setIsLoading(false);
       return;
     }
 
     const supabase = createClient();
 
     if (!supabase) {
-      setIsLoading(false);
+      void Promise.resolve().then(() => {
+        setIsLoading(false);
+      });
       return;
     }
 
@@ -107,7 +119,7 @@ export function AuthProvider({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
+      const nextUser = toClientUser(session?.user ?? null);
       setUser(nextUser);
       void syncProfile(nextUser);
       setIsLoading(false);

@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
-import { getServerAuthSession } from "@/lib/auth/session";
+import { getServerAuthSession, serializeAuthSession } from "@/lib/auth/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +24,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerAuthSession();
+  let initialAuth = { user: null, profile: null } as ReturnType<
+    typeof serializeAuthSession
+  >;
+
+  try {
+    initialAuth = serializeAuthSession(await getServerAuthSession());
+  } catch {
+    initialAuth = { user: null, profile: null };
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -34,8 +42,8 @@ export default async function RootLayout({
       <body className="min-h-screen bg-bone text-ink antialiased">
         <ThemeProvider>
           <AuthShell
-            initialProfile={session?.profile ?? null}
-            initialUser={session?.user ?? null}
+            initialProfile={initialAuth.profile}
+            initialUser={initialAuth.user}
           >
             <SiteHeader />
             <div className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">

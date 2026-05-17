@@ -20,6 +20,29 @@ export type ServerAuthSession = {
   isAdmin: boolean;
 };
 
+/** Plain object safe to pass from Server Components to client providers. */
+export type ClientAuthUser = {
+  id: string;
+  email: string | null;
+};
+
+export function serializeAuthSession(session: ServerAuthSession | null): {
+  user: ClientAuthUser | null;
+  profile: AuthProfile | null;
+} {
+  if (!session) {
+    return { user: null, profile: null };
+  }
+
+  return {
+    user: {
+      id: session.user.id,
+      email: session.user.email ?? null,
+    },
+    profile: session.profile,
+  };
+}
+
 export const getServerAuthSession = cache(async function getServerAuthSession(): Promise<
   ServerAuthSession | null
 > {
