@@ -73,11 +73,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     : { articles: [] as ArticleRecord[] };
 
   return (
-    <main className="min-h-screen">
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8">
+    <main className="min-h-screen min-w-0">
+      <section className="kp-shell flex w-full max-w-5xl flex-col gap-8 py-10">
         <header className="space-y-2 border-b border-ink/15 pb-8">
           <p className="kp-eyebrow">Search</p>
-          <h1 className="font-serif text-4xl font-semibold tracking-editorial text-ink sm:text-5xl">
+          <h1 className="kp-heading font-semibold tracking-editorial text-ink">
             Find a story
           </h1>
         </header>
@@ -88,17 +88,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               Keywords
             </span>
             <input
-              className="rounded-xl border border-ink/15 bg-bone px-4 py-3 text-base text-ink outline-none transition focus:border-heritage"
+              className="kp-input rounded-xl text-base outline-none transition focus:border-heritage"
               defaultValue={query}
               name="q"
               placeholder="Title, subtitle, summary, or category…"
               type="search"
             />
           </label>
-          <button
-            className="rounded-full bg-ink px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-bone transition hover:bg-heritage"
-            type="submit"
-          >
+          <button className="kp-btn-primary w-full sm:w-auto" type="submit">
             Search
           </button>
         </form>

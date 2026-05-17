@@ -8,7 +8,7 @@ export function SubmitArticleButton() {
   return (
     <button
       aria-disabled={pending}
-      className="inline-flex justify-center rounded-full bg-ink px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-bone transition hover:bg-heritage disabled:cursor-not-allowed disabled:opacity-70"
+      className="kp-btn-primary inline-flex justify-center disabled:cursor-not-allowed disabled:opacity-70"
       disabled={pending}
       type="submit"
     >

@@ -23,14 +23,14 @@ export function FeaturedArticle({ article }: FeaturedArticleProps) {
 
   return (
     <article className="overflow-hidden border-y border-ink bg-bone">
-      <Link className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]" href={getArticleHref(article)}>
-        <div className="flex min-h-[24rem] flex-col justify-between gap-10 p-6 sm:p-8 lg:p-10">
+      <Link className="grid min-w-0 gap-0 lg:grid-cols-[1.1fr_0.9fr]" href={getArticleHref(article)}>
+        <div className="flex min-h-[18rem] flex-col justify-between gap-8 p-5 sm:min-h-[22rem] sm:gap-10 sm:p-8 lg:min-h-[24rem] lg:p-10">
           <div className="grid gap-5">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-heritage">
               Featured
             </p>
 
-            <h2 className="max-w-3xl font-serif text-4xl leading-[0.95] text-ink sm:text-5xl lg:text-6xl">
+            <h2 className="max-w-3xl font-serif text-[clamp(1.75rem,4.5vw,3.75rem)] leading-[0.95] text-ink">
               {title}
             </h2>
 

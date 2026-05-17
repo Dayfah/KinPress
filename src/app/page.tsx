@@ -64,20 +64,18 @@ export default async function Home() {
   const hasArticles = articles.length > 0;
 
   return (
-    <main className="min-h-screen">
-      <section className="kp-shell flex flex-col gap-12 py-8 sm:py-10">
-        <section className="grid gap-8 border-b border-ink/15 pb-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
-          <div className="grid gap-5">
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-heritage">
-              News / Culture / Archive
-            </p>
-            <h1 className="max-w-4xl font-serif text-5xl leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+    <main className="min-h-screen min-w-0">
+      <section className="kp-shell flex flex-col gap-10 py-8 sm:gap-12 sm:py-10">
+        <section className="grid gap-6 border-b border-ink/15 pb-8 sm:gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+          <div className="grid min-w-0 gap-4 sm:gap-5">
+            <p className="kp-eyebrow">News / Culture / Archive</p>
+            <h1 className="kp-display max-w-4xl text-ink">
               The Black community, reported with depth and remembered with care.
             </h1>
           </div>
 
-          <div className="border-l-4 border-gold pl-5">
-            <p className="max-w-xl text-lg leading-8 text-ink/75">
+          <div className="min-w-0 border-t-4 border-gold pt-4 lg:border-t-0 lg:border-l-4 lg:pt-0 lg:pl-5">
+            <p className="max-w-xl text-base leading-7 text-ink/75 sm:text-lg sm:leading-8">
               KinPress covers the stories, debates, art, labor, joy, and power
               shaping Black life today while building a premium cultural record
               for tomorrow.
@@ -95,10 +93,7 @@ export default async function Home() {
               arts, and community life.
             </p>
           </div>
-          <Link
-            className="inline-flex w-fit rounded-full border border-ink/20 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-ink transition hover:border-heritage hover:text-heritage"
-            href="/search"
-          >
+          <Link className="kp-btn-outline w-fit" href="/search">
             Explore stories
           </Link>
         </section>
@@ -164,7 +159,7 @@ export default async function Home() {
           )}
         </section>
 
-        <section className="grid gap-5 bg-ink p-8 text-bone sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
+        <section className="kp-invert-band grid gap-5 p-8 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.24em] text-gold">
               KinPress membership
@@ -173,10 +168,7 @@ export default async function Home() {
               A newsroom and archive built for the people who keep culture moving.
             </h2>
           </div>
-          <Link
-            className="inline-flex w-fit rounded-full bg-bone px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-ink transition hover:bg-gold"
-            href="/signup"
-          >
+          <Link className="kp-btn-outline w-fit sm:w-auto" href="/signup">
             Join the list
           </Link>
         </section>

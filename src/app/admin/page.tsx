@@ -40,7 +40,7 @@ export default async function AdminPage() {
             </p>
           </div>
           <Link
-            className="inline-flex justify-center rounded-full bg-ink px-6 py-3 text-center text-sm font-black uppercase tracking-[0.14em] text-bone transition hover:bg-heritage"
+            className="kp-btn-primary inline-flex justify-center text-center"
             href="/admin/articles/new"
           >
             New article

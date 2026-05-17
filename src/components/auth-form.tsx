@@ -61,7 +61,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <label className="kp-field mt-8 text-sm font-bold text-ink">
         Email
         <input
-          className="mt-2 w-full rounded-xl border border-ink/15 bg-bone px-4 py-3 text-ink outline-none focus:border-heritage"
+          className="kp-input mt-2 rounded-xl outline-none focus:border-heritage"
           onChange={(event) => setEmail(event.target.value)}
           placeholder="reader@example.com"
           required
@@ -72,7 +72,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <label className="kp-field mt-5 text-sm font-bold text-ink">
         Password
         <input
-          className="mt-2 w-full rounded-xl border border-ink/15 bg-bone px-4 py-3 text-ink outline-none focus:border-heritage"
+          className="kp-input mt-2 rounded-xl outline-none focus:border-heritage"
           minLength={6}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="At least 6 characters"
