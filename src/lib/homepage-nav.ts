@@ -21,7 +21,7 @@ export const homeCategoryPills: HomeCategoryPill[] = newsCategoryConfigs.map(
 
 export const mobileBottomNavItems = [
   { label: "Today", href: "/", icon: "today" as const },
-  { label: "For You", href: "/for-you", icon: "sections" as const },
+  { label: "Sections", href: "/#sections", icon: "sections" as const },
   { label: "Saved", href: "/saved", icon: "saved" as const },
   { label: "Search", href: "/search", icon: "search" as const },
   { label: "Profile", href: "/profile", icon: "profile" as const },

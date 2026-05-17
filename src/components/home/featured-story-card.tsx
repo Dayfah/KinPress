@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
+import { SafeStoryImage } from "@/components/home/safe-story-image";
 import { formatPublishedDate } from "@/lib/content";
 import type { HomeFeedArticle } from "@/lib/news/feed";
 
@@ -22,10 +22,10 @@ export function FeaturedStoryCard({ article }: FeaturedStoryCardProps) {
       >
         {article.imageUrl ? (
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-charcoal/10">
-            <img
-              alt=""
+            <SafeStoryImage
               className="h-full w-full object-cover"
               src={article.imageUrl}
+              wrapperClassName="aspect-[16/10] w-full"
             />
           </div>
         ) : (

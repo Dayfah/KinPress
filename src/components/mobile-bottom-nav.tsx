@@ -23,6 +23,10 @@ const icons = {
 } as const;
 
 function isBottomNavActive(pathname: string, href: string) {
+  if (href === "/#sections") {
+    return pathname === "/";
+  }
+
   return isNavLinkActive(pathname, href);
 }
 

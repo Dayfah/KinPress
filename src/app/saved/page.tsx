@@ -28,7 +28,24 @@ export default async function SavedArticlesPage() {
     redirect("/login");
   }
 
-  const articles = await getSavedArticlesForUser(user.id);
+  let articles: Awaited<ReturnType<typeof getSavedArticlesForUser>> = [];
+
+  try {
+    articles = await getSavedArticlesForUser(user.id);
+  } catch {
+    return (
+      <main className="min-h-screen min-w-0 overflow-x-hidden">
+        <section className="kp-page-container max-w-lg py-12 sm:py-16">
+          <p className="kp-eyebrow">Saved articles</p>
+          <h1 className="kp-heading mt-3 font-semibold text-ink">Your reading list</h1>
+          <p className="mt-4 text-sm leading-6 text-ink/70">
+            We could not load your saved stories right now. Please refresh or try again
+            later.
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen min-w-0 overflow-x-hidden">

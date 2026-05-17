@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
+import { SafeStoryImage } from "@/components/home/safe-story-image";
 import type { HomeFeedArticle } from "@/lib/news/feed";
 import { formatPublishedDate } from "@/lib/content";
 
@@ -22,10 +22,10 @@ export function StoryRowCard({ article }: StoryRowCardProps) {
       >
         {article.imageUrl ? (
           <div className="size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-charcoal/10 sm:size-24">
-            <img
-              alt=""
+            <SafeStoryImage
               className="h-full w-full object-cover"
               src={article.imageUrl}
+              wrapperClassName="size-[4.5rem] sm:size-24"
             />
           </div>
         ) : (
