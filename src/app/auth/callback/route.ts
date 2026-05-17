@@ -42,6 +42,15 @@ export async function GET(request: Request) {
     );
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { ensureUserProfile } = await import("@/lib/auth/profile");
+    await ensureUserProfile(supabase, user);
+  }
+
   const safeNext = next.startsWith("/") ? next : "/profile";
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

@@ -51,6 +51,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       if (isSignup) {
         if (result.data.session) {
+          await fetch("/api/auth/setup", { method: "POST" });
           router.push("/profile");
           router.refresh();
           return;
@@ -60,6 +61,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
+      await fetch("/api/auth/setup", { method: "POST" });
       router.push("/profile");
       router.refresh();
     } catch (error) {

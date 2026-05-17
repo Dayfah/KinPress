@@ -2,55 +2,37 @@ import Link from "next/link";
 
 import { KinPressLogo } from "@/components/kinpress-logo";
 import { MastheadMobileMenu } from "@/components/masthead-mobile-menu";
+import { HeaderAuthActions } from "@/components/header-auth-actions";
 import { ThemeToggle } from "@/components/theme-toggle";
-import type { CategoryRecord } from "@/lib/content";
-import { mastheadLinks } from "@/lib/masthead-nav";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getMastheadSession } from "@/lib/masthead-session";
+import { readerSectionLinks, readerUtilityLinks } from "@/lib/masthead-nav";
 
 export async function SiteHeader() {
-  const supabase = await createSupabaseServerClient();
-  let navCategories: CategoryRecord[] = [];
-
-  if (supabase) {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .limit(8);
-
-    if (!error && data) {
-      navCategories = data as CategoryRecord[];
-    }
-  }
+  const { isLoggedIn, showAdmin } = await getMastheadSession();
+  const utilityLinks = [
+    ...readerUtilityLinks,
+    ...(showAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/15 bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85">
       <div className="kp-shell py-3 sm:py-4">
-        <HeaderTopRow categories={navCategories} />
+        <HeaderTopRow isLoggedIn={isLoggedIn} showAdmin={showAdmin} />
         <nav
           aria-label="Primary"
-          className="mt-3 hidden flex-wrap items-center gap-3 border-t border-ink/10 pt-3 md:flex md:gap-4"
+          className="mt-3 hidden flex-wrap items-center gap-2 border-t border-ink/10 pt-3 md:flex md:gap-2.5"
         >
-          {navCategories.map((category, index) => {
-            const slug = typeof category.slug === "string" ? category.slug : null;
-            if (!slug) {
-              return null;
-            }
-
-            return (
-              <Link
-                className="rounded-full border border-ink/15 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-muted-brown transition hover:border-ink/35 hover:text-ink"
-                href={`/categories/${slug}`}
-                key={String(category.id ?? slug ?? index)}
-              >
-                {typeof category.name === "string" && category.name.trim()
-                  ? category.name
-                  : slug}
-              </Link>
-            );
-          })}
-          {mastheadLinks.map((link) => (
+          {readerSectionLinks.map((link) => (
+            <Link
+              className="rounded-full border border-ink/15 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-muted-brown transition hover:border-ink/35 hover:text-ink"
+              href={link.href}
+              key={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <span aria-hidden className="mx-1 hidden h-4 w-px bg-ink/15 lg:inline" />
+          {utilityLinks.map((link) => (
             <Link
               className="text-xs font-black uppercase tracking-[0.14em] text-muted-brown transition hover:text-ink"
               href={link.href}
@@ -65,7 +47,13 @@ export async function SiteHeader() {
   );
 }
 
-function HeaderTopRow({ categories }: { categories: CategoryRecord[] }) {
+function HeaderTopRow({
+  isLoggedIn,
+  showAdmin,
+}: {
+  isLoggedIn: boolean;
+  showAdmin: boolean;
+}) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-3">
       <KinPressLogo className="min-w-0 shrink" />
@@ -74,13 +62,12 @@ function HeaderTopRow({ categories }: { categories: CategoryRecord[] }) {
       </p>
       <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
         <ThemeToggle />
-        <Link className="kp-btn-ghost hidden text-sm sm:inline-flex" href="/login">
-          Log in
-        </Link>
-        <Link className="kp-btn-primary hidden text-xs sm:inline-flex" href="/signup">
-          Join
-        </Link>
-        <MastheadMobileMenu categories={categories} />
+        <HeaderAuthActions
+          className="hidden sm:flex"
+          isLoggedIn={isLoggedIn}
+          linkClassName="inline-flex"
+        />
+        <MastheadMobileMenu isLoggedIn={isLoggedIn} showAdmin={showAdmin} />
       </div>
     </div>
   );

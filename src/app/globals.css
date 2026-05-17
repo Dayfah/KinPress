@@ -297,3 +297,71 @@ svg {
   border-color: var(--gold-accent);
   color: var(--gold-accent);
 }
+
+/* —— Homepage (Apple News–inspired) —— */
+
+.kp-home {
+  --kp-shell-pad: clamp(1rem, 4vw, 2.25rem);
+}
+
+.kp-pill-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.kp-pill-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.kp-home-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: var(--ink-black);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.kp-home-pill:hover {
+  border-color: var(--heritage-red);
+  color: var(--heritage-red);
+}
+
+.kp-home-pill-active {
+  border-color: var(--heritage-red);
+  background: color-mix(in srgb, var(--heritage-red) 12%, hsl(var(--card)));
+  color: var(--heritage-red);
+}
+
+.kp-home-card {
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink-black) 4%, transparent);
+}
+
+.dark .kp-home-card {
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--bone-white) 6%, transparent);
+}
+
+.kp-bottom-nav {
+  box-shadow: 0 -4px 24px color-mix(in srgb, var(--ink-black) 8%, transparent);
+}
+
+.kp-input:focus,
+.kp-textarea:focus,
+input.kp-input:focus {
+  outline: none;
+  border-color: var(--heritage-red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-accent) 35%, transparent);
+}

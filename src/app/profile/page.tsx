@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/sign-out-button";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
+import { ensureUserProfile } from "@/lib/auth/profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type Profile = {
@@ -97,6 +98,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   if (!user) {
     redirect("/login");
   }
+
+  await ensureUserProfile(supabase, user);
 
   const { data: profile, error } = await supabase
     .from("profiles")

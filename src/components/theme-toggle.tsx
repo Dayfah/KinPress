@@ -4,13 +4,17 @@ import { Moon, Sun } from "lucide-react";
 
 import { useTheme } from "@/components/theme-provider";
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  className?: string;
+};
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className="kp-icon-button"
+      className={className ?? "kp-icon-button"}
       onClick={toggleTheme}
       type="button"
     >

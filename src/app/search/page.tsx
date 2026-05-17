@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { ArticleCard } from "@/components/article-card";
-import type { ArticleRecord } from "@/lib/content";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { StoryRowCard } from "@/components/home/story-row-card";
+import { unifiedSearch } from "@/lib/search-feed";
 
 export const dynamic = "force-dynamic";
 
@@ -12,65 +12,17 @@ type SearchPageProps = {
   }>;
 };
 
-/** Strip ilike metacharacters and commas so `.or()` filter strings stay safe. */
-function sanitizeSearchTerm(raw: string) {
-  return raw.replace(/[%_,\\]/g, " ").replace(/,/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function buildPublishedArticleOrIlike(sanitizedTerm: string) {
-  const inner = sanitizedTerm.replace(/"/g, '""');
-  const pattern = `"%${inner}%"`;
-
-  return [
-    `title.ilike.${pattern}`,
-    `subtitle.ilike.${pattern}`,
-    `summary.ilike.${pattern}`,
-    `category_name.ilike.${pattern}`,
-  ].join(",");
-}
-
-async function searchPublishedArticles(term: string): Promise<{
-  articles: ArticleRecord[];
-}> {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return { articles: [] };
-  }
-
-  const sanitized = sanitizeSearchTerm(term);
-
-  if (!sanitized) {
-    return { articles: [] };
-  }
-
-  const orFilter = buildPublishedArticleOrIlike(sanitized);
-
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("status", "published")
-    .or(orFilter)
-    .order("published_at", { ascending: false })
-    .limit(48);
-
-  if (error) {
-    console.error("Search failed", error.message);
-    return { articles: [] };
-  }
-
-  return { articles: (data ?? []) as ArticleRecord[] };
-}
-
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const rawQuery = typeof params?.q === "string" ? params.q : "";
   const query = rawQuery.trim();
   const hasQuery = query.length > 0;
 
-  const { articles } = hasQuery
-    ? await searchPublishedArticles(query)
-    : { articles: [] as ArticleRecord[] };
+  const { kinpress, headlines } = hasQuery
+    ? await unifiedSearch(query)
+    : { kinpress: [], headlines: [] };
+
+  const hasResults = kinpress.length > 0 || headlines.length > 0;
 
   return (
     <main className="min-h-screen min-w-0">
@@ -80,9 +32,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <h1 className="kp-heading font-semibold tracking-editorial text-ink">
             Find a story
           </h1>
+          <p className="text-sm text-ink/65">
+            Search KinPress originals and headline wire stories.
+          </p>
         </header>
 
-        <form action="/search" className="flex flex-col gap-3 sm:flex-row sm:items-end" method="get" role="search">
+        <form
+          action="/search"
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          method="get"
+          role="search"
+        >
           <label className="grid flex-1 gap-2 text-sm font-bold text-ink">
             <span className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown">
               Keywords
@@ -91,7 +51,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               className="kp-input rounded-xl text-base outline-none transition focus:border-heritage"
               defaultValue={query}
               name="q"
-              placeholder="Title, subtitle, summary, or category…"
+              placeholder="Title, topic, or category…"
               type="search"
             />
           </label>
@@ -101,19 +61,47 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </form>
 
         {!hasQuery ? (
-          <p className="text-lg leading-8 text-ink/70">Search KinPress stories.</p>
-        ) : articles.length === 0 ? (
+          <p className="text-lg leading-8 text-ink/70">
+            Search KinPress originals and curated headlines.
+          </p>
+        ) : !hasResults ? (
           <p className="font-serif text-2xl text-ink">No stories found.</p>
         ) : (
-          <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2">
-            {articles.map((article, index) => (
-              <ArticleCard article={article} key={String(article.id ?? article.slug ?? index)} />
-            ))}
+          <div className="space-y-12">
+            {kinpress.length > 0 ? (
+              <section className="space-y-5">
+                <h2 className="font-serif text-2xl text-ink">KinPress originals</h2>
+                <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2">
+                  {kinpress.map((article, index) => (
+                    <ArticleCard
+                      article={article}
+                      key={String(article.id ?? article.slug ?? index)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {headlines.length > 0 ? (
+              <section className="space-y-5">
+                <h2 className="font-serif text-2xl text-ink">Headlines</h2>
+                <ul className="grid min-w-0 gap-3">
+                  {headlines.map((article) => (
+                    <li className="min-w-0" key={article.id}>
+                      <StoryRowCard article={article} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </div>
         )}
 
         <p className="text-sm text-ink/55">
-          <Link className="font-bold text-heritage underline-offset-4 hover:underline" href="/">
+          <Link
+            className="font-bold text-heritage underline-offset-4 hover:underline"
+            href="/"
+          >
             Back to home
           </Link>
         </p>

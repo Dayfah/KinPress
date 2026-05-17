@@ -46,16 +46,18 @@ export default async function SavedArticlesPage() {
         <div className="kp-page-container mt-12 grid max-w-5xl gap-x-7 gap-y-10 sm:grid-cols-2">
           {articles.map((article) => (
             <ArticleCard
-              authorName={article.authorName ?? ""}
-              categoryName={article.categoryName ?? ""}
-              coverImageUrl={article.coverImageUrl}
-              id={article.id}
-              isPremium={article.isPremium}
+              article={{
+                id: article.id,
+                slug: article.slug,
+                title: article.title,
+                subtitle: article.subtitle,
+                cover_image_url: article.coverImageUrl,
+                published_at: article.publishedAt,
+                category_name: article.categoryName,
+                author_name: article.authorName,
+                is_premium: article.isPremium,
+              }}
               key={article.id}
-              publishedAt={article.publishedAt ?? ""}
-              slug={article.slug}
-              subtitle={article.subtitle ?? ""}
-              title={article.title}
             />
           ))}
         </div>

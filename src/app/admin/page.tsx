@@ -1,30 +1,28 @@
 import Link from "next/link";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/guards";
+import { getArticlesForAdmin } from "@/lib/kinpress-articles";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const supabase = await createSupabaseServerClient();
+  const { supabase } = await requireAdmin();
 
-  let publishedCount = 0;
-  let categoryCount = 0;
+  const [articlesRes, categoriesRes, articles] = await Promise.all([
+    supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published"),
+    supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("is_active", true),
+    getArticlesForAdmin(),
+  ]);
 
-  if (supabase) {
-    const [articlesRes, categoriesRes] = await Promise.all([
-      supabase
-        .from("articles")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "published"),
-      supabase
-        .from("categories")
-        .select("id", { count: "exact", head: true })
-        .eq("is_active", true),
-    ]);
-
-    publishedCount = articlesRes.count ?? 0;
-    categoryCount = categoriesRes.count ?? 0;
-  }
+  const publishedCount = articlesRes.count ?? 0;
+  const categoryCount = categoriesRes.count ?? 0;
+  const draftCount = articles.filter((item) => item.status !== "published").length;
 
   return (
     <main className="min-h-screen">
@@ -36,15 +34,23 @@ export default async function AdminPage() {
               Editorial dashboard
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-ink/70">
-              Review publishing metrics and draft new KinPress articles.
+              Manage KinPress originals, review drafts, and publish to the homepage.
             </p>
           </div>
-          <Link
-            className="kp-btn-primary inline-flex justify-center text-center"
-            href="/admin/articles/new"
-          >
-            New article
-          </Link>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Link
+              className="kp-btn-primary inline-flex justify-center text-center"
+              href="/admin/articles/new"
+            >
+              New article
+            </Link>
+            <Link
+              className="kp-btn-ghost inline-flex justify-center text-center text-sm"
+              href="/admin/articles"
+            >
+              Manage articles
+            </Link>
+          </div>
         </div>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,6 +59,12 @@ export default async function AdminPage() {
               Published articles
             </p>
             <p className="mt-3 font-serif text-4xl text-ink">{publishedCount}</p>
+          </div>
+          <div className="border border-ink/15 bg-card p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-brown">
+              Drafts & review
+            </p>
+            <p className="mt-3 font-serif text-4xl text-ink">{draftCount}</p>
           </div>
           <div className="border border-ink/15 bg-card p-6 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-brown">

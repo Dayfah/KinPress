@@ -5,8 +5,17 @@ import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured, SUPABASE_ENV_SETUP_HINT } from "@/lib/supabase/env";
+import { cn } from "@/lib/utils";
 
-export function SignOutButton() {
+type SignOutButtonProps = {
+  className?: string;
+  label?: string;
+};
+
+export function SignOutButton({
+  className,
+  label = "Sign out",
+}: SignOutButtonProps) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const configured = isSupabaseConfigured();
@@ -35,12 +44,12 @@ export function SignOutButton() {
   return (
     <div className="flex flex-col gap-2 sm:items-end">
       <button
-        className="kp-btn-outline w-full sm:w-auto"
+        className={cn("kp-btn-outline w-full sm:w-auto", className)}
         disabled={!configured}
         onClick={handleSignOut}
         type="button"
       >
-        Log out
+        {label}
       </button>
       {message ? (
         <p className="max-w-md text-sm text-heritage" role="status">

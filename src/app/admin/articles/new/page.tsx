@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireEditorOrAdmin } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SubmitArticleButton } from "./submit-button";
 
@@ -225,6 +226,18 @@ async function createArticle(formData: FormData) {
   }
 
   const categoryId = optionalTextField(formData, "category_id");
+  let categoryName: string | null = null;
+
+  if (categoryId) {
+    const { data: category } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("id", categoryId)
+      .maybeSingle<{ name: string | null }>();
+
+    categoryName = category?.name?.trim() || null;
+  }
+
   const publishedAt = status === "published" ? new Date().toISOString() : null;
   const coverImageFile = readCoverImageFile(formData);
   let coverImageUrl = optionalTextField(formData, "cover_image_url");
@@ -251,6 +264,7 @@ async function createArticle(formData: FormData) {
     summary: optionalTextField(formData, "summary"),
     body,
     category_id: categoryId,
+    category_name: categoryName,
     tags: readTags(formData),
     cover_image_url: coverImageUrl,
     is_premium: formData.get("is_premium") === "on",
@@ -266,6 +280,8 @@ async function createArticle(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/admin/articles");
   revalidatePath("/admin/articles/new");
   redirect(`/admin/articles/new?saved=1&slug=${encodeURIComponent(slug)}`);
 }
