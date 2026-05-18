@@ -1,64 +1,55 @@
+import type { ArticleTopic } from "@/lib/editorial/types";
+
 export type ReaderNavItem = {
   label: string;
   href: string;
-  /** When set, active state uses `?category=` on the homepage. */
-  homeCategory?: string;
 };
 
-/** Editorial destinations — Apple News–style reader sections. */
-export const readerSectionLinks: ReaderNavItem[] = [
-  { label: "Top Stories", href: "/" },
-  { label: "For You", href: "/for-you" },
-  {
-    label: "Culture",
-    href: "/?category=culture",
-    homeCategory: "culture",
-  },
-  {
-    label: "Politics",
-    href: "/?category=politics",
-    homeCategory: "politics",
-  },
-  {
-    label: "Business",
-    href: "/?category=business",
-    homeCategory: "business",
-  },
-  { label: "Local", href: "/?category=local", homeCategory: "local" },
-  { label: "History", href: "/?category=history", homeCategory: "history" },
-  { label: "Arts", href: "/?category=arts", homeCategory: "arts" },
-  { label: "Opinion", href: "/?category=opinion", homeCategory: "opinion" },
-  { label: "KinPress Originals", href: "/#kinpress-originals" },
-];
-
-/** Desktop masthead utilities (auth lives in the header bar). */
-export const readerUtilityLinks: ReaderNavItem[] = [
-  { label: "Search", href: "/search" },
-];
-
-/** Mobile drawer: library + account destinations. */
-export const readerMobileUtilityLinks: ReaderNavItem[] = [
+/** Main editorial sections (desktop header + mobile drawer). */
+export const primaryNavLinks: ReaderNavItem[] = [
+  { label: "Home", href: "/" },
+  { label: "Culture", href: "/topic/culture" },
+  { label: "Politics", href: "/topic/politics" },
+  { label: "Business", href: "/topic/business" },
+  { label: "History", href: "/topic/history" },
+  { label: "Arts", href: "/topic/arts" },
+  { label: "Opinion", href: "/topic/opinion" },
   { label: "Saved", href: "/saved" },
-  { label: "Search", href: "/search" },
   { label: "Profile", href: "/profile" },
+];
+
+export const utilityNavLinks: ReaderNavItem[] = [
+  { label: "Search", href: "/search" },
+  { label: "Latest", href: "/latest" },
 ];
 
 const adminLink: ReaderNavItem = { label: "Admin", href: "/admin" };
 
 export function getMobileNavLinks(options: { showAdmin: boolean }): ReaderNavItem[] {
-  const links = [...readerSectionLinks, ...readerMobileUtilityLinks];
+  const links = [...primaryNavLinks, ...utilityNavLinks];
 
   if (options.showAdmin) {
-    links.push(adminLink);
+    return [...links, adminLink];
   }
 
   return links;
 }
 
-/** @deprecated Use getMobileNavLinks */
-export function getReaderNavLinks(options: { showAdmin: boolean }): ReaderNavItem[] {
-  return getMobileNavLinks(options);
-}
+export const TOPIC_LABELS: Record<ArticleTopic, string> = {
+  politics: "Politics",
+  culture: "Culture",
+  history: "History",
+  business: "Business",
+  arts: "Arts",
+  justice: "Justice",
+  education: "Education",
+  health: "Health",
+  community: "Community",
+  opinion: "Opinion",
+};
 
-/** @deprecated Use getReaderNavLinks — kept for any stale imports during transition. */
-export const mastheadLinks = readerUtilityLinks;
+/** @deprecated */
+export const readerSectionLinks = primaryNavLinks;
+export const readerUtilityLinks = utilityNavLinks;
+export const readerMobileUtilityLinks: ReaderNavItem[] = [];
+export const mastheadLinks = primaryNavLinks;

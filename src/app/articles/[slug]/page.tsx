@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+
+import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
 import SaveArticleButton from "@/components/save-article-button";
 import {
   CommentSection,
   type VisibleComment,
 } from "@/components/comment-section";
-import { getPublishedArticleBySlug, type Article } from "@/lib/articles";
+import { getArticleBySlug, getRelatedArticles } from "@/lib/editorial/articles";
+import { formatPublishedDate } from "@/lib/content";
 import { createClient } from "@/lib/supabase/server";
 
 type CommentProfile = {
@@ -28,7 +32,7 @@ export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getPublishedArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     return {
@@ -38,7 +42,7 @@ export async function generateMetadata({
 
   return {
     title: `${article.title} | KinPress`,
-    description: article.subtitle ?? undefined,
+    description: article.excerpt,
   };
 }
 
@@ -109,12 +113,13 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = await getPublishedArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
+  const related = await getRelatedArticles(article);
   const supabase = await createClient();
   let user = null;
   let comments: VisibleComment[] = [];
@@ -132,52 +137,83 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       .returns<VisibleComment[]>();
 
     if (commentsError) {
-      throw new Error(`Unable to load comments: ${commentsError.message}`);
+      console.error("[KinPress] load comments", commentsError.message);
+    } else {
+      comments = data ?? [];
     }
-
-    comments = data ?? [];
   }
+
+  const publishedLabel = formatPublishedDate(article.publishedAt);
 
   return (
     <main className="min-h-screen">
-      <article className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-5 py-8 sm:px-8 lg:px-10">
-        {article.coverImageUrl ? (
-          <figure className="relative aspect-[16/9] overflow-hidden bg-ink/10">
+      <article className="kp-shell mx-auto flex w-full max-w-5xl flex-col gap-10 py-8 sm:py-10">
+        {article.imageUrl ? (
+          <figure className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-ink/10">
             <Image
               alt=""
               className="object-cover"
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 1024px"
-              src={article.coverImageUrl}
+              src={article.imageUrl}
             />
           </figure>
         ) : null}
 
         <header className="space-y-6 border-b border-ink/15 pb-10">
-          <div className="flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-[0.22em] text-muted-brown">
-            {article.categoryName ? <span>{article.categoryName}</span> : null}
-            {article.isPremium ? <span>KinPress+</span> : null}
+          <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-muted-brown">
+            <span className="text-heritage">{article.category}</span>
+            <span className="text-ink/40" aria-hidden>
+              ·
+            </span>
+            <span>{article.readingTime} min read</span>
+            {publishedLabel ? (
+              <>
+                <span className="text-ink/40" aria-hidden>
+                  ·
+                </span>
+                <time dateTime={article.publishedAt ?? undefined}>{publishedLabel}</time>
+              </>
+            ) : null}
+            {article.isPremium ? (
+              <>
+                <span className="text-ink/40" aria-hidden>
+                  ·
+                </span>
+                <span>KinPress+</span>
+              </>
+            ) : null}
           </div>
 
-          <h1 className="max-w-4xl font-serif text-5xl leading-[0.92] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+          <h1 className="max-w-4xl font-serif text-4xl leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
             {article.title}
           </h1>
 
-          {article.subtitle ? (
-            <p className="max-w-3xl font-serif text-2xl leading-snug text-ink/70">
-              {article.subtitle}
-            </p>
-          ) : null}
+          <p className="max-w-3xl text-lg leading-8 text-ink/75 sm:text-xl">{article.excerpt}</p>
 
-          <div className="flex flex-wrap items-center gap-4 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
-            {article.authorName ? <span>By {article.authorName}</span> : null}
-            {article.publishedAt ? (
-              <time dateTime={article.publishedAt}>
-                {formatPublishedDate(article.publishedAt)}
-              </time>
-            ) : null}
-          </div>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-muted-brown">
+            By {article.author}
+          </p>
+
+          {article.kind === "curated_external" && article.sourceName && article.sourceUrl ? (
+            <aside className="rounded-xl border border-ink/15 bg-bone/60 px-5 py-4 text-sm leading-6 text-ink/80 dark:border-ink/25 dark:bg-card/90 dark:text-ink/85">
+              <p className="font-bold uppercase tracking-[0.12em] text-muted-brown">
+                Curated from an external source
+              </p>
+              <p className="mt-2">
+                KinPress summary · Full reporting at{" "}
+                <a
+                  className="font-bold text-heritage underline-offset-4 hover:underline"
+                  href={article.sourceUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {article.sourceName}
+                </a>
+              </p>
+            </aside>
+          ) : null}
 
           <SaveArticleButton
             articleId={article.id}
@@ -185,7 +221,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
         </header>
 
-        <ArticleBody article={article} />
+        <ArticleBody body={article.body} />
 
         {article.tags.length > 0 ? (
           <ul
@@ -193,19 +229,34 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             className="flex flex-wrap gap-2 border-t border-ink/15 pt-8"
           >
             {article.tags.map((tag) => (
-              <li
-                className="rounded-full border border-ink/15 px-3 py-1 text-sm font-bold text-muted-brown"
-                key={tag}
-              >
-                #{tag}
+              <li key={tag}>
+                <Link
+                  className="rounded-full border border-ink/15 px-3 py-1 text-sm font-bold text-muted-brown transition hover:border-heritage hover:text-heritage"
+                  href={`/search?q=${encodeURIComponent(tag)}`}
+                >
+                  #{tag}
+                </Link>
               </li>
             ))}
           </ul>
         ) : null}
 
+        {related.length > 0 ? (
+          <section className="border-t border-ink/15 pt-10">
+            <h2 className="font-serif text-2xl font-semibold text-ink">Related stories</h2>
+            <ul className="mt-6 grid gap-6 sm:grid-cols-2">
+              {related.map((item) => (
+                <li key={item.id}>
+                  <EditorialArticleCard article={item} variant="compact" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <CommentSection
           addCommentAction={addComment.bind(null, article.id, slug)}
-          comments={comments ?? []}
+          comments={comments}
           isLoggedIn={Boolean(user)}
         />
       </article>
@@ -213,8 +264,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 }
 
-function ArticleBody({ article }: { article: Article }) {
-  const paragraphs = article.body
+function ArticleBody({ body }: { body: string }) {
+  const paragraphs = body
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
@@ -222,18 +273,14 @@ function ArticleBody({ article }: { article: Article }) {
   return (
     <div className="max-w-3xl font-serif text-xl leading-9 text-ink sm:text-2xl sm:leading-10">
       {paragraphs.length > 0 ? (
-        paragraphs.map((paragraph, index) => <p className="mb-7" key={index}>{paragraph}</p>)
+        paragraphs.map((paragraph, index) => (
+          <p className="mb-7" key={index}>
+            {paragraph}
+          </p>
+        ))
       ) : (
-        <p>Article body is not available.</p>
+        <p className="text-base font-sans text-ink/70">Full article text is not available.</p>
       )}
     </div>
   );
-}
-
-function formatPublishedDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
 }

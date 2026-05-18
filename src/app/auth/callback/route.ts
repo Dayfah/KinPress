@@ -2,12 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { sanitizeRedirectPath } from "@/lib/auth/routes";
 import { getAuthSiteOrigin, getPublicSupabaseEnv } from "@/lib/supabase/env";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/profile";
+  const next = sanitizeRedirectPath(searchParams.get("next"), "/profile");
   const origin = getAuthSiteOrigin();
 
   if (!code) {
@@ -51,6 +52,5 @@ export async function GET(request: Request) {
     await ensureUserProfile(supabase, user);
   }
 
-  const safeNext = next.startsWith("/") ? next : "/profile";
-  return NextResponse.redirect(`${origin}${safeNext}`);
+  return NextResponse.redirect(`${origin}${next}`);
 }

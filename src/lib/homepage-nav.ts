@@ -1,28 +1,7 @@
-import { newsCategoryConfigs } from "@/lib/news/categories";
-import type { NewsCategorySlug } from "@/lib/news/types";
-
-export type HomeCategoryPill = {
-  label: string;
-  slug: NewsCategorySlug;
-  href: string;
-};
-
-/** Homepage horizontal category pills (Apple News–style). */
-export const homeCategoryPills: HomeCategoryPill[] = newsCategoryConfigs.map(
-  (config) => ({
-    label: config.label,
-    slug: config.slug,
-    href:
-      config.slug === "top-stories"
-        ? "/"
-        : `/?category=${encodeURIComponent(config.slug)}`,
-  }),
-);
-
+/** Mobile bottom navigation — core reader actions. */
 export const mobileBottomNavItems = [
-  { label: "Today", href: "/", icon: "today" as const },
-  { label: "Sections", href: "/#sections", icon: "sections" as const },
-  { label: "Saved", href: "/saved", icon: "saved" as const },
+  { label: "Home", href: "/", icon: "today" as const },
   { label: "Search", href: "/search", icon: "search" as const },
+  { label: "Saved", href: "/saved", icon: "saved" as const },
   { label: "Profile", href: "/profile", icon: "profile" as const },
 ] as const;

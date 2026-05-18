@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/server";
 
 type SaveArticleButtonProps = {
@@ -28,7 +30,7 @@ async function toggleSavedArticle(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/login?next=${encodeURIComponent(articlePath)}`);
   }
 
   const { data: savedArticle, error: savedArticleError } = await supabase
@@ -73,11 +75,14 @@ export default async function SaveArticleButton({
 }: SaveArticleButtonProps) {
   const supabase = await createClient();
   let isSaved = false;
+  let isLoggedIn = false;
 
   if (supabase) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    isLoggedIn = Boolean(user);
 
     if (user) {
       const { data, error } = await supabase
@@ -88,11 +93,25 @@ export default async function SaveArticleButton({
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
-        throw new Error(`Unable to check saved article: ${error.message}`);
+        console.error("[KinPress] save button check", error.message);
+      } else {
+        isSaved = Boolean(data);
       }
-
-      isSaved = Boolean(data);
     }
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          className="kp-btn-primary text-sm"
+          href={`/login?next=${encodeURIComponent(articlePath)}`}
+        >
+          Sign in to save
+        </Link>
+        <p className="text-sm text-ink/65">Save stories to your reading list.</p>
+      </div>
+    );
   }
 
   return (
@@ -100,7 +119,7 @@ export default async function SaveArticleButton({
       <input type="hidden" name="articleId" value={articleId} />
       <input type="hidden" name="articlePath" value={articlePath} />
       <button className="kp-btn-primary text-sm" type="submit">
-        {isSaved ? "Saved" : "Save"}
+        {isSaved ? "Saved" : "Save article"}
       </button>
     </form>
   );

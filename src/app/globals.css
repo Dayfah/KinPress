@@ -221,6 +221,23 @@ svg {
   color: var(--bone-white);
 }
 
+.dark .kp-btn-primary,
+.dark .kp-button {
+  background: var(--bone-white);
+  color: var(--ink-black);
+}
+
+.dark .kp-btn-primary:hover,
+.dark .kp-button:hover {
+  background: var(--heritage-red);
+  color: var(--bone-white);
+}
+
+.dark .kp-btn-outline {
+  color: var(--bone-white);
+  border-color: color-mix(in srgb, var(--bone-white) 35%, transparent);
+}
+
 .kp-btn-outline {
   display: inline-flex;
   align-items: center;
@@ -228,7 +245,7 @@ svg {
   border: 1px solid hsl(var(--border));
   border-radius: 999px;
   background: transparent;
-  color: var(--ink-black);
+  color: hsl(var(--foreground));
   padding: 0.65rem 1rem;
   font-size: clamp(0.68rem, 1.6vw, 0.75rem);
   font-weight: 900;
@@ -248,7 +265,7 @@ svg {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  color: var(--ink-black);
+  color: hsl(var(--foreground));
   padding: 0.5rem 0.75rem;
   font-weight: 700;
   transition: color 0.2s ease, background-color 0.2s ease;
@@ -376,7 +393,7 @@ svg {
   border: 1px solid hsl(var(--border));
   border-radius: 999px;
   background: hsl(var(--card));
-  color: var(--ink-black);
+  color: hsl(var(--foreground));
   width: 2.5rem;
   height: 2.5rem;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
@@ -425,13 +442,29 @@ svg {
   display: none;
 }
 
+.kp-rail-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.kp-rail-scroll > li {
+  scroll-snap-align: start;
+}
+
+.kp-rail-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .kp-home-pill {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
   border: 1px solid hsl(var(--border));
   background: hsl(var(--card));
-  color: var(--ink-black);
+  color: hsl(var(--foreground));
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 700;

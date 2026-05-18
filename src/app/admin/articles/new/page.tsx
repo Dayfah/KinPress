@@ -2,10 +2,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/guards";
+import { estimateReadingTime, slugifyTitle } from "@/lib/editorial/normalize";
+import {
+  ARTICLE_KINDS,
+  ARTICLE_REGIONS,
+  ARTICLE_TOPICS,
+} from "@/lib/editorial/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SubmitArticleButton } from "./submit-button";
 
-const ARTICLE_STATUSES = ["draft", "review", "published", "archived"] as const;
+const ARTICLE_STATUSES = ["draft", "published"] as const;
 const COVER_BUCKET = "article-covers";
 const COVER_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
 const COVER_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -189,12 +195,30 @@ async function createArticle(formData: FormData) {
   } = await requireAdmin();
 
   const title = textField(formData, "title");
-  const slug = textField(formData, "slug");
+  const slugInput = textField(formData, "slug");
+  const slug = slugInput || slugifyTitle(title);
   const body = textField(formData, "body");
+  const excerpt =
+    optionalTextField(formData, "excerpt") || optionalTextField(formData, "summary");
   const status = readStatus(formData);
+  const topic = textField(formData, "topic") || "culture";
+  const region = textField(formData, "region") || "national";
+  const articleKind = textField(formData, "article_kind") || "kinpress_original";
 
-  if (!title || !slug || !body || !status) {
-    messageRedirect("Title, slug, body, and status are required.");
+  if (!title || !body || !status) {
+    messageRedirect("Title, body, and status are required.");
+  }
+
+  if (status === "published" && !excerpt) {
+    messageRedirect("Excerpt is required before publishing.");
+  }
+
+  if (articleKind === "curated_external") {
+    const sourceName = optionalTextField(formData, "source_name");
+    const sourceUrl = optionalTextField(formData, "source_url");
+    if (!sourceName || !sourceUrl) {
+      messageRedirect("Curated stories require source name and canonical URL.");
+    }
   }
 
   const categoryId = optionalTextField(formData, "category_id");
@@ -212,7 +236,8 @@ async function createArticle(formData: FormData) {
 
   const publishedAt = status === "published" ? new Date().toISOString() : null;
   const coverImageFile = readCoverImageFile(formData);
-  let coverImageUrl = optionalTextField(formData, "cover_image_url");
+  let coverImageUrl =
+    optionalTextField(formData, "image_url") || optionalTextField(formData, "cover_image_url");
 
   if (coverImageFile) {
     const uploadResult = await uploadCoverImage(
@@ -233,18 +258,27 @@ async function createArticle(formData: FormData) {
     title,
     slug,
     subtitle: optionalTextField(formData, "subtitle"),
-    summary: optionalTextField(formData, "summary"),
+    summary: excerpt,
+    excerpt,
     body,
     category_id: categoryId,
     category_name: categoryName,
     tags: readTags(formData),
     cover_image_url: coverImageUrl,
+    image_url: coverImageUrl,
+    source_name: optionalTextField(formData, "source_name"),
+    source_url: optionalTextField(formData, "source_url"),
     is_premium: formData.get("is_premium") === "on",
     is_featured: formData.get("is_featured") === "on",
+    editor_pick: formData.get("editor_pick") === "on",
     status,
     published_at: publishedAt,
     author_id: user.id,
-    author_name: profileAuthorName(editorProfile, user.email),
+    author_name: profileAuthorName(editorProfile, user.email) || "KinPress Editorial",
+    reading_time: estimateReadingTime(body),
+    region,
+    topic,
+    article_kind: articleKind,
   });
 
   if (error) {
@@ -325,8 +359,7 @@ export default async function NewArticlePage({
               <input
                 className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
                 name="slug"
-                placeholder="story-slug"
-                required
+                placeholder="Auto-generated from title if left blank"
               />
             </label>
 
@@ -340,11 +373,12 @@ export default async function NewArticlePage({
             </label>
 
             <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-2">
-              Summary
+              Excerpt
               <textarea
                 className="min-h-28 border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
-                name="summary"
-                placeholder="Short summary for article cards and previews"
+                name="excerpt"
+                placeholder="KinPress summary for cards and previews (required to publish)"
+                required
               />
             </label>
 
@@ -405,6 +439,70 @@ export default async function NewArticlePage({
               </select>
             </label>
 
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
+              Topic
+              <select
+                className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
+                defaultValue="culture"
+                name="topic"
+              >
+                {ARTICLE_TOPICS.map((topic) => (
+                  <option key={topic} value={topic}>
+                    {topic}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
+              Region
+              <select
+                className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
+                defaultValue="national"
+                name="region"
+              >
+                {ARTICLE_REGIONS.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
+              Article type
+              <select
+                className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
+                defaultValue="kinpress_original"
+                name="article_kind"
+              >
+                {ARTICLE_KINDS.map((kind) => (
+                  <option key={kind} value={kind}>
+                    {kind.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-2">
+              Source name
+              <input
+                className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
+                name="source_name"
+                placeholder="For curated stories only"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-2">
+              Source URL
+              <input
+                className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
+                name="source_url"
+                placeholder="https://canonical-source.example/story"
+                type="url"
+              />
+            </label>
+
             <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-3">
               Cover image upload
               <input
@@ -419,10 +517,10 @@ export default async function NewArticlePage({
             </label>
 
             <label className="grid gap-2 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown lg:col-span-3">
-              Cover image URL fallback
+              Image URL
               <input
                 className="border border-ink/20 bg-white/70 px-4 py-3 text-base font-normal normal-case tracking-normal text-ink outline-none transition focus:border-heritage"
-                name="cover_image_url"
+                name="image_url"
                 placeholder="https://..."
                 type="url"
               />
@@ -441,6 +539,10 @@ export default async function NewArticlePage({
               <label className="flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
                 <input className="size-4 accent-heritage" name="is_featured" type="checkbox" />
                 Featured
+              </label>
+              <label className="flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] text-muted-brown">
+                <input className="size-4 accent-heritage" name="editor_pick" type="checkbox" />
+                Editor pick
               </label>
             </div>
 

@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/sign-out-button";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
+import { SupabaseQueryError } from "@/components/supabase-query-error";
+import { formatSupabaseError } from "@/lib/supabase/errors";
 import { requireAuthenticatedUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -102,7 +104,16 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     .maybeSingle<Profile>();
 
   if (error) {
-    throw new Error(`Unable to load profile: ${error.message}`);
+    return (
+      <main className="min-h-screen min-w-0 overflow-x-hidden">
+        <section className="kp-page-container max-w-lg py-12 sm:py-16">
+          <SupabaseQueryError
+            message={formatSupabaseError(error.message, error.code)}
+            title="Could not load profile"
+          />
+        </section>
+      </main>
+    );
   }
 
   return (

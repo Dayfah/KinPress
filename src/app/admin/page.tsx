@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { requireAdmin } from "@/lib/auth/guards";
-import { getArticlesForAdmin } from "@/lib/kinpress-articles";
+import { getArticlesForAdmin } from "@/lib/editorial/articles";
 
 export const dynamic = "force-dynamic";
 

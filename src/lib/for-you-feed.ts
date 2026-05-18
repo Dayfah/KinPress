@@ -1,67 +1,57 @@
 import { cache } from "react";
 
-import type { ArticleSummary } from "@/lib/articles";
-import { getSavedArticlesForUser } from "@/lib/articles";
-import type { ArticleRecord } from "@/lib/content";
-import { getArticleCategory } from "@/lib/content";
-import { getCachedNewsArticles } from "@/lib/news/cache";
-import {
-  newsCategoryConfigs,
-  parseNewsCategorySlug,
-  type NewsCategoryConfig,
-} from "@/lib/news/categories";
-import { toHomeFeedArticle, type HomeFeedArticle } from "@/lib/news/feed";
+import { getSavedEditorialArticles } from "@/lib/editorial/saved";
+import { normalizeArticle, type ArticleRow } from "@/lib/editorial/normalize";
+import type { EditorialArticle, ArticleTopic } from "@/lib/editorial/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type ForYouFeed = {
-  saved: ArticleSummary[];
-  kinpress: ArticleRecord[];
-  headlines: HomeFeedArticle[];
+  saved: EditorialArticle[];
+  recommended: EditorialArticle[];
   interestLabels: string[];
 };
 
-function categorySlugFromName(name: string | null | undefined): string | null {
-  if (!name) {
-    return null;
-  }
+const ARTICLE_SELECT = `
+  id,
+  slug,
+  title,
+  subtitle,
+  summary,
+  excerpt,
+  body,
+  category_name,
+  tags,
+  author_name,
+  source_name,
+  source_url,
+  cover_image_url,
+  image_url,
+  published_at,
+  updated_at,
+  status,
+  is_featured,
+  editor_pick,
+  reading_time,
+  region,
+  topic,
+  article_kind,
+  is_premium
+`;
 
-  const normalized = name.toLowerCase().trim();
-  const match = newsCategoryConfigs.find(
-    (config) =>
-      config.label.toLowerCase() === normalized ||
-      config.slug === normalized.replace(/\s+/g, "-"),
-  );
-
-  return match?.slug ?? null;
-}
-
-function pickInterestCategories(
-  saved: ArticleSummary[],
-  recent: ArticleRecord[],
-): NewsCategoryConfig[] {
-  const slugs = new Set<string>();
-
-  for (const article of saved) {
-    const slug = categorySlugFromName(article.categoryName);
-    if (slug) {
-      slugs.add(slug);
-    }
-  }
-
-  for (const article of recent.slice(0, 8)) {
-    const slug = categorySlugFromName(getArticleCategory(article));
-    if (slug) {
-      slugs.add(slug);
-    }
-  }
-
-  if (slugs.size === 0) {
-    return newsCategoryConfigs.filter((item) =>
-      ["culture", "politics", "business"].includes(item.slug),
-    );
-  }
-
-  return newsCategoryConfigs.filter((item) => slugs.has(item.slug)).slice(0, 3);
+function topicLabels(topics: ArticleTopic[]) {
+  const labels: Record<ArticleTopic, string> = {
+    politics: "Politics",
+    culture: "Culture",
+    history: "History",
+    business: "Business",
+    arts: "Arts",
+    justice: "Justice",
+    education: "Education",
+    health: "Health",
+    community: "Community",
+    opinion: "Opinion",
+  };
+  return topics.map((topic) => labels[topic]);
 }
 
 export const getForYouFeed = cache(async function getForYouFeed(
@@ -70,74 +60,45 @@ export const getForYouFeed = cache(async function getForYouFeed(
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return { saved: [], kinpress: [], headlines: [], interestLabels: [] };
+    return { saved: [], recommended: [], interestLabels: [] };
   }
 
-  const saved = await getSavedArticlesForUser(userId);
-
+  const saved = await getSavedEditorialArticles(userId);
   const savedIds = new Set(saved.map((article) => article.id));
+  const topics = new Set<ArticleTopic>();
 
-  const { data: recentArticles } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
-    .limit(24);
-
-  const recent = (recentArticles ?? []) as ArticleRecord[];
-  const interests = pickInterestCategories(saved, recent);
-
-  const categoryNames = new Set(
-    saved
-      .map((article) => article.categoryName?.toLowerCase())
-      .filter((name): name is string => Boolean(name)),
-  );
-
-  const kinpress = recent
-    .filter((article) => {
-      if (savedIds.has(String(article.id))) {
-        return false;
-      }
-
-      if (categoryNames.size === 0) {
-        return true;
-      }
-
-      const name = getArticleCategory(article).toLowerCase();
-      return categoryNames.has(name);
-    })
-    .slice(0, 6);
-
-  const headlineBatches = await Promise.all(
-    interests.map((config) =>
-      getCachedNewsArticles(parseNewsCategorySlug(config.slug)),
-    ),
-  );
-
-  const headlines: HomeFeedArticle[] = [];
-  const seen = new Set<string>();
-
-  for (const batch of headlineBatches) {
-    for (const article of batch.articles) {
-      const item = toHomeFeedArticle(article);
-      if (seen.has(item.id)) {
-        continue;
-      }
-      seen.add(item.id);
-      headlines.push(item);
-      if (headlines.length >= 9) {
-        break;
-      }
-    }
-    if (headlines.length >= 9) {
-      break;
-    }
+  for (const article of saved) {
+    topics.add(article.topic);
   }
+
+  if (topics.size === 0) {
+    topics.add("culture");
+    topics.add("politics");
+    topics.add("community");
+  }
+
+  const { data, error } = await supabase
+    .from("articles")
+    .select(ARTICLE_SELECT)
+    .eq("status", "published")
+    .in("topic", [...topics])
+    .order("published_at", { ascending: false })
+    .limit(24)
+    .returns<ArticleRow[]>();
+
+  if (error) {
+    console.error("[KinPress] getForYouFeed", error.message);
+    return { saved, recommended: [], interestLabels: topicLabels([...topics]) };
+  }
+
+  const recommended = (data ?? [])
+    .map(normalizeArticle)
+    .filter((article) => !savedIds.has(article.id))
+    .slice(0, 9);
 
   return {
     saved,
-    kinpress,
-    headlines,
-    interestLabels: interests.map((item) => item.label),
+    recommended,
+    interestLabels: topicLabels([...topics]),
   };
 });

@@ -1,0 +1,27 @@
+/** PostgREST select list for articles (no embeds — avoids join/RLS failures). */
+export const ARTICLE_COLUMNS = `
+  id,
+  slug,
+  title,
+  subtitle,
+  summary,
+  excerpt,
+  body,
+  category_name,
+  tags,
+  author_name,
+  source_name,
+  source_url,
+  cover_image_url,
+  image_url,
+  published_at,
+  updated_at,
+  status,
+  is_featured,
+  editor_pick,
+  reading_time,
+  region,
+  topic,
+  article_kind,
+  is_premium
+`;

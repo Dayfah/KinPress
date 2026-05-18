@@ -24,7 +24,7 @@ export function KinPressLogo({
     >
       <Image
         alt=""
-        className="size-9 shrink-0 sm:size-10"
+        className="size-9 shrink-0 dark:brightness-0 dark:invert sm:size-10"
         height={40}
         priority
         src="/kinpress-logo.svg"

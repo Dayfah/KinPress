@@ -7,12 +7,18 @@ import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
 import { getServerAuthSession, serializeAuthSession } from "@/lib/auth/session";
+import { KINPRESS_DESCRIPTION, KINPRESS_TITLE } from "@/lib/brand";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KinPress | Black news, culture, and community",
-  description:
-    "A premium Black-centered news, culture, history, politics, business, arts, opinion, and community platform.",
+  title: KINPRESS_TITLE,
+  description: KINPRESS_DESCRIPTION,
+  openGraph: {
+    title: KINPRESS_TITLE,
+    description: KINPRESS_DESCRIPTION,
+    siteName: "KinPress",
+    type: "website",
+  },
   icons: {
     icon: "/kinpress-logo.svg",
     apple: "/kinpress-logo.svg",

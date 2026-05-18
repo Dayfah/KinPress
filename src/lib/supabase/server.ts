@@ -17,7 +17,7 @@ function warnMissingSupabaseEnvOnce() {
 
   if (process.env.NODE_ENV === "development") {
     console.warn(
-      "[KinPress] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Supabase-backed routes will degrade until env vars are set.",
+      "[KinPress] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY. Supabase-backed routes will degrade until env vars are set.",
     );
   }
 }

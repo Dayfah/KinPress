@@ -4,7 +4,9 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { KinPressLogo } from "@/components/kinpress-logo";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
+import { KINPRESS_DESCRIPTION } from "@/lib/brand";
 import { mapSupabaseAuthError } from "@/lib/auth/messages";
 import { sanitizeRedirectPath } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +27,17 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
   const isSignup = mode === "signup";
   const configured = isSupabaseConfigured();
   const afterAuthPath = sanitizeRedirectPath(redirectTo, "/profile");
+
+  const authHeader = (
+    <>
+      <KinPressLogo className="mb-6 dark:[&_img]:brightness-0 dark:[&_img]:invert" />
+      <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
+      <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
+        {isSignup ? "Join KinPress" : "Log in to KinPress"}
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{KINPRESS_DESCRIPTION}</p>
+    </>
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -87,12 +100,7 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
   if (!configured) {
     return (
       <div className="kp-auth-card mx-auto w-full min-w-0 max-w-md">
-        <div className="min-w-0">
-          <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
-          <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
-            {isSignup ? "Join KinPress" : "Log in to KinPress"}
-          </h1>
-        </div>
+        <div className="min-w-0">{authHeader}</div>
         <div className="mt-8 min-w-0">
           <SupabaseConfigNotice />
         </div>
@@ -102,17 +110,7 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
 
   return (
     <form className="kp-auth-card mx-auto w-full min-w-0 max-w-md" onSubmit={handleSubmit}>
-      <div className="min-w-0">
-        <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
-        <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
-          {isSignup ? "Join KinPress" : "Log in to KinPress"}
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          {isSignup
-            ? "Create your reader profile to save stories and join the conversation."
-            : "Continue to your saved stories, comments, and community profile."}
-        </p>
-      </div>
+      <div>{authHeader}</div>
 
       <label className="kp-field mt-8 block min-w-0 text-sm font-bold text-foreground">
         Email

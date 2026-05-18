@@ -19,13 +19,13 @@ export const SUPABASE_ENV_SETUP_HINT = AUTH_UNAVAILABLE_MESSAGE;
 
 /**
  * Reads public Supabase credentials from NEXT_PUBLIC_* env vars.
- * Prefers NEXT_PUBLIC_SUPABASE_ANON_KEY; falls back to NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
+ * Prefers NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; falls back to NEXT_PUBLIC_SUPABASE_ANON_KEY.
  */
 export function getPublicSupabaseEnv(): PublicSupabaseEnv | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const anonKey = (
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )?.trim();
 
   if (!url || !anonKey) {

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { ArticleCard } from "@/components/article-card";
+import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
-import { getSavedArticlesForUser } from "@/lib/articles";
+import { getSavedEditorialArticles } from "@/lib/editorial/saved";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -28,24 +28,7 @@ export default async function SavedArticlesPage() {
     redirect("/login");
   }
 
-  let articles: Awaited<ReturnType<typeof getSavedArticlesForUser>> = [];
-
-  try {
-    articles = await getSavedArticlesForUser(user.id);
-  } catch {
-    return (
-      <main className="min-h-screen min-w-0 overflow-x-hidden">
-        <section className="kp-page-container max-w-lg py-12 sm:py-16">
-          <p className="kp-eyebrow">Saved articles</p>
-          <h1 className="kp-heading mt-3 font-semibold text-ink">Your reading list</h1>
-          <p className="mt-4 text-sm leading-6 text-ink/70">
-            We could not load your saved stories right now. Please refresh or try again
-            later.
-          </p>
-        </section>
-      </main>
-    );
-  }
+  const articles = await getSavedEditorialArticles(user.id);
 
   return (
     <main className="min-h-screen min-w-0 overflow-x-hidden">
@@ -55,32 +38,21 @@ export default async function SavedArticlesPage() {
           Your reading list
         </h1>
         <p className="max-w-2xl text-lg leading-8 text-ink/70">
-          Stories you saved are collected here for easy reading later.
+          Stories you saved are collected here. Open a story and tap Save again to remove it.
         </p>
       </section>
 
       {articles.length > 0 ? (
-        <div className="kp-page-container mt-12 grid max-w-5xl gap-x-7 gap-y-10 sm:grid-cols-2">
+        <ul className="kp-page-container mt-12 grid max-w-5xl gap-6 sm:grid-cols-2">
           {articles.map((article) => (
-            <ArticleCard
-              article={{
-                id: article.id,
-                slug: article.slug,
-                title: article.title,
-                subtitle: article.subtitle,
-                cover_image_url: article.coverImageUrl,
-                published_at: article.publishedAt,
-                category_name: article.categoryName,
-                author_name: article.authorName,
-                is_premium: article.isPremium,
-              }}
-              key={article.id}
-            />
+            <li key={article.id}>
+              <EditorialArticleCard article={article} variant="compact" />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <section className="kp-page-container mt-12 max-w-5xl border border-dashed border-ink/30 bg-bone/75 p-10 text-center">
-          <h2 className="font-serif text-3xl text-ink">No saved articles yet.</h2>
+        <section className="kp-page-container mt-12 max-w-5xl rounded-2xl border border-dashed border-ink/30 bg-bone/75 p-10 text-center">
+          <h2 className="font-serif text-3xl text-ink">No saved articles yet</h2>
           <p className="mt-3 text-sm leading-6 text-ink/65">
             Save a story from an article page and it will appear here.
           </p>

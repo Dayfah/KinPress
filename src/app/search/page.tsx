@@ -1,28 +1,62 @@
 import Link from "next/link";
 
-import { ArticleCard } from "@/components/article-card";
-import { StoryRowCard } from "@/components/home/story-row-card";
-import { unifiedSearch } from "@/lib/search-feed";
+import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { searchEditorialArticles } from "@/lib/editorial/search";
+import {
+  ARTICLE_REGIONS,
+  ARTICLE_TOPICS,
+  type ArticleRegion,
+  type ArticleTopic,
+} from "@/lib/editorial/types";
+import { TOPIC_LABELS } from "@/lib/masthead-nav";
 
 export const dynamic = "force-dynamic";
 
 type SearchPageProps = {
   searchParams?: Promise<{
     q?: string;
+    topic?: string;
+    region?: string;
+    category?: string;
+    from?: string;
   }>;
 };
+
+function parseTopic(value: string | undefined): ArticleTopic | undefined {
+  if (value && ARTICLE_TOPICS.includes(value as ArticleTopic)) {
+    return value as ArticleTopic;
+  }
+  return undefined;
+}
+
+function parseRegion(value: string | undefined): ArticleRegion | undefined {
+  if (value && ARTICLE_REGIONS.includes(value as ArticleRegion)) {
+    return value as ArticleRegion;
+  }
+  return undefined;
+}
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const rawQuery = typeof params?.q === "string" ? params.q : "";
   const query = rawQuery.trim();
+  const topic = parseTopic(params?.topic);
+  const region = parseRegion(params?.region);
+  const category = typeof params?.category === "string" ? params.category.trim() : "";
+  const fromDate = typeof params?.from === "string" ? params.from : undefined;
+
   const hasQuery = query.length > 0;
+  const hasFilters = Boolean(topic || region || category || fromDate);
 
-  const { kinpress, headlines } = hasQuery
-    ? await unifiedSearch(query)
-    : { kinpress: [], headlines: [] };
-
-  const hasResults = kinpress.length > 0 || headlines.length > 0;
+  const results =
+    hasQuery || hasFilters
+      ? await searchEditorialArticles(query, {
+          topic,
+          region,
+          category: category || undefined,
+          fromDate,
+        })
+      : [];
 
   return (
     <main className="min-h-screen min-w-0">
@@ -33,13 +67,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             Find a story
           </h1>
           <p className="text-sm text-ink/65">
-            Search KinPress originals and headline wire stories.
+            Search KinPress by title, topic, author, category, or source.
           </p>
         </header>
 
         <form
           action="/search"
-          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          className="grid gap-4 rounded-2xl border border-ink/15 bg-bone/40 p-5 sm:p-6"
           method="get"
           role="search"
         >
@@ -51,50 +85,90 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               className="kp-input rounded-xl text-base outline-none transition focus:border-heritage"
               defaultValue={query}
               name="q"
-              placeholder="Title, topic, or category…"
+              placeholder="Title, topic, tag, or author…"
               type="search"
             />
           </label>
-          <button className="kp-btn-primary w-full sm:w-auto" type="submit">
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="grid gap-2 text-sm font-bold text-ink">
+              <span className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown">
+                Topic
+              </span>
+              <select className="kp-input rounded-xl" defaultValue={topic ?? ""} name="topic">
+                <option value="">All topics</option>
+                {ARTICLE_TOPICS.map((item) => (
+                  <option key={item} value={item}>
+                    {TOPIC_LABELS[item]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold text-ink">
+              <span className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown">
+                Region
+              </span>
+              <select className="kp-input rounded-xl" defaultValue={region ?? ""} name="region">
+                <option value="">All regions</option>
+                {ARTICLE_REGIONS.map((item) => (
+                  <option key={item} value={item}>
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold text-ink">
+              <span className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown">
+                Category
+              </span>
+              <input
+                className="kp-input rounded-xl"
+                defaultValue={category}
+                name="category"
+                placeholder="e.g. Culture"
+                type="text"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold text-ink">
+              <span className="text-xs font-black uppercase tracking-[0.16em] text-muted-brown">
+                From date
+              </span>
+              <input
+                className="kp-input rounded-xl"
+                defaultValue={fromDate ?? ""}
+                name="from"
+                type="date"
+              />
+            </label>
+          </div>
+
+          <button className="kp-btn-primary w-full sm:w-auto sm:self-start" type="submit">
             Search
           </button>
         </form>
 
-        {!hasQuery ? (
+        {!hasQuery && !hasFilters ? (
           <p className="text-lg leading-8 text-ink/70">
-            Search KinPress originals and curated headlines.
+            Enter keywords or choose filters to search the KinPress archive.
           </p>
-        ) : !hasResults ? (
-          <p className="font-serif text-2xl text-ink">No stories found.</p>
-        ) : (
-          <div className="space-y-12">
-            {kinpress.length > 0 ? (
-              <section className="space-y-5">
-                <h2 className="font-serif text-2xl text-ink">KinPress originals</h2>
-                <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2">
-                  {kinpress.map((article, index) => (
-                    <ArticleCard
-                      article={article}
-                      key={String(article.id ?? article.slug ?? index)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {headlines.length > 0 ? (
-              <section className="space-y-5">
-                <h2 className="font-serif text-2xl text-ink">Headlines</h2>
-                <ul className="grid min-w-0 gap-3">
-                  {headlines.map((article) => (
-                    <li className="min-w-0" key={article.id}>
-                      <StoryRowCard article={article} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
+        ) : results.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-ink/25 px-6 py-12 text-center">
+            <p className="font-serif text-2xl text-ink">No stories found</p>
+            <p className="mt-3 text-sm text-ink/65">
+              Try different keywords or clear a filter to broaden your search.
+            </p>
           </div>
+        ) : (
+          <ul className="grid gap-6 sm:grid-cols-2">
+            {results.map((article) => (
+              <li key={article.id}>
+                <EditorialArticleCard article={article} variant="compact" />
+              </li>
+            ))}
+          </ul>
         )}
 
         <p className="text-sm text-ink/55">
