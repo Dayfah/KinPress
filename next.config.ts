@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+import { assertProductionEnvForBuild } from "./src/lib/env/validate";
+
+assertProductionEnvForBuild();
+
 const nextConfig: NextConfig = {
   images: {
     unoptimized: true,

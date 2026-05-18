@@ -7,71 +7,91 @@ import {
   isAuthProtectedPath,
   sanitizeRedirectPath,
 } from "@/lib/auth/routes";
-import { getPublicSupabaseEnv } from "@/lib/supabase/env";
+import { getMiddlewareSupabaseConfig } from "@/lib/supabase/middleware-env";
 
-export async function updateSession(request: NextRequest) {
-  const env = getPublicSupabaseEnv();
-  const { pathname } = request.nextUrl;
+function nextPassthrough(request: NextRequest) {
+  return NextResponse.next({ request });
+}
 
-  if (!env) {
-    return NextResponse.next({ request });
-  }
-
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(env.url, env.anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => {
-          request.cookies.set(name, value);
-        });
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => {
-          supabaseResponse.cookies.set(name, value, options);
-        });
-      },
-    },
+/** Copy refreshed auth cookies onto redirect responses (required by @supabase/ssr). */
+function withSupabaseCookies(
+  target: NextResponse,
+  source: NextResponse,
+): NextResponse {
+  source.cookies.getAll().forEach(({ name, value, ...options }) => {
+    target.cookies.set(name, value, options);
   });
+  return target;
+}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function redirectToLogin(
+  request: NextRequest,
+  pathname: string,
+  supabaseResponse: NextResponse,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.searchParams.set("next", pathname);
+  return withSupabaseCookies(NextResponse.redirect(url), supabaseResponse);
+}
 
-  if (user && isAuthGuestPath(pathname)) {
-    const next = sanitizeRedirectPath(
-      request.nextUrl.searchParams.get("next"),
-      "/profile",
-    );
-    const url = request.nextUrl.clone();
-    url.pathname = next;
-    url.search = "";
-    return NextResponse.redirect(url);
+/**
+ * Refreshes the Supabase session and applies route guards.
+ * @see https://supabase.com/docs/guides/auth/server-side/nextjs
+ */
+export async function updateSession(request: NextRequest) {
+  const config = getMiddlewareSupabaseConfig();
+
+  if (!config) {
+    return nextPassthrough(request);
   }
 
-  if (!user && (isAuthProtectedPath(pathname) || isAdminPath(pathname))) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
+  let supabaseResponse = nextPassthrough(request);
 
-  if (user && isAdminPath(pathname)) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle<{ role: string | null }>();
+  try {
+    const supabase = createServerClient(config.url, config.anonKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+          supabaseResponse = nextPassthrough(request);
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options);
+          });
+        },
+      },
+    });
 
-    if (profile?.role !== "admin") {
+    // Do not add logic between createServerClient and getUser — required for session refresh.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { pathname } = request.nextUrl;
+    const isLoggedIn = Boolean(user);
+
+    if (isLoggedIn && isAuthGuestPath(pathname)) {
+      const next = sanitizeRedirectPath(
+        request.nextUrl.searchParams.get("next"),
+        "/profile",
+      );
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = next;
       url.search = "";
-      return NextResponse.redirect(url);
+      return withSupabaseCookies(NextResponse.redirect(url), supabaseResponse);
     }
-  }
 
-  return supabaseResponse;
+    if (!isLoggedIn && (isAuthProtectedPath(pathname) || isAdminPath(pathname))) {
+      return redirectToLogin(request, pathname, supabaseResponse);
+    }
+
+    return supabaseResponse;
+  } catch (error) {
+    console.error("[KinPress] middleware session refresh failed", error);
+    return nextPassthrough(request);
+  }
 }

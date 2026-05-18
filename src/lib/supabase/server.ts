@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { collectPublicEnvIssues } from "@/lib/env/validate";
 import { getPublicSupabaseEnv } from "@/lib/supabase/env";
 
 const globalForSupabaseEnv = globalThis as {
@@ -15,11 +16,13 @@ function warnMissingSupabaseEnvOnce() {
 
   globalForSupabaseEnv.__kinpressMissingSupabaseEnvLogged = true;
 
-  if (process.env.NODE_ENV === "development") {
-    console.warn(
-      "[KinPress] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY. Supabase-backed routes will degrade until env vars are set.",
-    );
-  }
+  const envErrors = collectPublicEnvIssues().filter((i) => i.severity === "error");
+  const message =
+    envErrors.length > 0
+      ? envErrors.map((i) => i.message).join(" ")
+      : "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY.";
+
+  console.warn(`[KinPress] Supabase env: ${message}`);
 }
 
 export async function createSupabaseServerClient(): Promise<SupabaseClient | null> {
@@ -43,14 +46,14 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
             cookieStore.set(name, value, options);
           });
         } catch {
-          // Server components cannot set cookies; route handlers and middleware can.
+          // Called from a Server Component — middleware refreshes sessions.
         }
       },
     },
   });
 }
 
-/** Returns a Supabase server client or null when env vars are missing (no throw). */
+/** @alias createSupabaseServerClient */
 export async function createClient(): Promise<SupabaseClient | null> {
   return createSupabaseServerClient();
 }

@@ -1,56 +1,59 @@
 # KinPress — Vercel environment checklist
 
-Set these in **Vercel → Project → Settings → Environment Variables** for **Production**, **Preview**, and **Development** (as needed).
+Set these in **Vercel → Project → Settings → Environment Variables** for **Production** (and **Preview** if you test PRs).
 
-## Required (client-safe)
+## Required (client-safe — `NEXT_PUBLIC_*`)
 
-| Variable | Example | Notes |
-|----------|---------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://kfpaevryzgnjllqaihtf.supabase.co` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` | Preferred API key |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Legacy fallback if not using publishable key |
+| Variable | Production value | Notes |
+|----------|------------------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://kfpaevryzgnjllqaihtf.supabase.co` | Full `https://` URL ending in `.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ…` (anon JWT) | **Or** use publishable key below |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` | Preferred; only one key type required |
+| `NEXT_PUBLIC_SITE_URL` | `https://kin-press.vercel.app` | Required on Vercel builds (auth redirects) |
 
-Use **either** publishable key **or** anon key (app prefers publishable).
+Copy keys from **Supabase → Project Settings → API** (anon or publishable — **not** service role).
 
-| Variable | Example | Notes |
-|----------|---------|--------|
-| `NEXT_PUBLIC_SITE_URL` | `https://kin-press.vercel.app` | Auth redirect origin (recommended) |
-
-## Optional / not required today
+## Optional
 
 | Variable | Notes |
 |----------|--------|
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only; **never** expose as `NEXT_PUBLIC_*`. Not used by current app. |
+| `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | `true` enables `/debug/supabase` in production |
+| `SKIP_ENV_VALIDATION` | Emergency CI bypass only — **do not** set on Production |
+
+## Do not set (unused or dangerous)
+
+| Variable | Why |
+|----------|-----|
+| `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | **Never** — exposes service role to the browser; build fails if detected |
+| `SUPABASE_SERVICE_ROLE_KEY` | Not used by current app; if added later, server-only, no `NEXT_PUBLIC_` prefix |
+| `ADMIN_EMAILS` | Not referenced in `src/` |
+| `CRON_SECRET` | Not referenced in `src/` |
+
 ## Supabase Auth URL checklist
 
 In **Supabase → Authentication → URL configuration**:
 
 | Setting | Value |
 |---------|--------|
-| **Site URL** | `https://kin-press.vercel.app` (or your production domain) |
+| **Site URL** | `https://kin-press.vercel.app` |
 | **Redirect URLs** | `https://kin-press.vercel.app/auth/callback` |
 | | `http://localhost:3000/auth/callback` |
+
+## Build validation
+
+When `VERCEL=1`, `next build` runs `assertProductionEnvForBuild()` and **fails the deploy** if:
+
+- `NEXT_PUBLIC_SUPABASE_URL` is missing or not a valid `https://…supabase.co` URL
+- Neither publishable nor anon key is set (or key is a placeholder / service_role JWT)
+- `NEXT_PUBLIC_SITE_URL` is missing
+- `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` is set
+
+This prevents `MIDDLEWARE_INVOCATION_FAILED` 500s from bad Supabase client construction.
 
 ## After changing env vars
 
 1. **Redeploy** on Vercel (env changes do not apply until redeploy).
-2. Confirm build command: `npm run build`
-3. Smoke-test: home, login, article page, saved (logged in), admin (admin user).
+2. Confirm build log shows no env validation errors.
+3. Smoke-test: `/`, `/login`, `/articles/<slug>`, `/saved`, `/admin`.
 
 See also [DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md) and [VERCEL_AUDIT.md](./VERCEL_AUDIT.md).
-
-## Build note
-
-If the build OOMs on Vercel, set in project settings or `vercel.json`:
-
-```json
-{
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=8192"
-    }
-  }
-}
-```
-
-Or increase build machine memory in Vercel plan settings.

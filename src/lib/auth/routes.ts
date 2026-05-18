@@ -1,4 +1,4 @@
-export const AUTH_GUEST_PATHS = ["/login", "/signup"] as const;
+export const AUTH_GUEST_PATHS = ["/login", "/signup", "/auth/login"] as const;
 
 export const AUTH_PROTECTED_PATHS = ["/profile", "/saved", "/for-you"] as const;
 

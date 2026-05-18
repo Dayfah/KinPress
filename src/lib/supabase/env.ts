@@ -1,12 +1,17 @@
-export type PublicSupabaseEnv = {
-  url: string;
-  anonKey: string;
-};
-
 import {
   AUTH_DEV_SETUP_HINT,
   AUTH_UNAVAILABLE_MESSAGE,
 } from "@/lib/auth/messages";
+import {
+  collectPublicEnvIssues,
+  isPublicSupabaseEnvUsable,
+  type EnvIssue,
+} from "@/lib/env/validate";
+
+export type PublicSupabaseEnv = {
+  url: string;
+  anonKey: string;
+};
 
 /** User-facing message when auth is unavailable (safe for production). */
 export const SUPABASE_ENV_USER_MESSAGE = AUTH_UNAVAILABLE_MESSAGE;
@@ -20,29 +25,40 @@ export const SUPABASE_ENV_SETUP_HINT = AUTH_UNAVAILABLE_MESSAGE;
 /**
  * Reads public Supabase credentials from NEXT_PUBLIC_* env vars.
  * Prefers NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; falls back to NEXT_PUBLIC_SUPABASE_ANON_KEY.
+ * Returns null when missing, invalid, or unsafe (never throws).
  */
 export function getPublicSupabaseEnv(): PublicSupabaseEnv | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const anonKey = (
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )?.trim();
-
-  if (!url || !anonKey) {
+  if (!isPublicSupabaseEnvUsable()) {
     return null;
   }
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
+  const anonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )!.trim();
+
   return { url, anonKey };
+}
+
+export function getPublicEnvIssues(): EnvIssue[] {
+  return collectPublicEnvIssues();
 }
 
 export function isSupabaseConfigured(): boolean {
   return getPublicSupabaseEnv() !== null;
 }
 
-/** Origin for auth redirects (OAuth, email confirmation). */
+/** Origin for auth redirects (OAuth, email confirmation). Never throws. */
 export function getAuthSiteOrigin(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL?.trim()) {
-    return process.env.NEXT_PUBLIC_SITE_URL.trim().replace(/\/$/, "");
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (siteUrl) {
+    try {
+      const parsed = new URL(siteUrl);
+      return parsed.origin;
+    } catch {
+      // fall through
+    }
   }
 
   if (process.env.VERCEL_URL?.trim()) {

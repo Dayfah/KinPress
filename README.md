@@ -39,17 +39,31 @@ Open http://localhost:3000.
 
 ## Environment variables
 
-| Variable | Required | Notes |
-|----------|----------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes* | Preferred public key |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes* | Legacy fallback |
-| `NEXT_PUBLIC_SITE_URL` | Recommended | Auth redirects (`http://localhost:3000` or production URL) |
+All Supabase access from the app uses **browser-safe** `NEXT_PUBLIC_*` keys only (anon or publishable). There is **no** `SUPABASE_SERVICE_ROLE_KEY` usage in `src/`.
 
-\* Provide **one** of publishable or anon key.  
-**Never** commit `.env.local` or expose `SUPABASE_SERVICE_ROLE_KEY` as `NEXT_PUBLIC_*`.
+| Variable | Vercel | Local | Safe in browser? |
+|----------|--------|-------|------------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | **Required** | **Required** | Yes |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes* | Yes* | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes* | Yes* | Yes |
+| `NEXT_PUBLIC_SITE_URL` | **Required** | Recommended | Yes |
+| `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | Optional | Optional | Yes |
 
-Template: [.env.example](.env.example)
+\* Set **one** of publishable or anon key (not both required).
+
+**Not used by the app** (do not add unless you implement new server features):
+
+| Variable | Notes |
+|----------|--------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only secret — never `NEXT_PUBLIC_*` |
+| `ADMIN_EMAILS` | Not referenced in code |
+| `CRON_SECRET` | Not referenced in code |
+
+**Validation:** On Vercel/CI, `npm run build` fails with a clear error if required vars are missing, invalid, or unsafe (e.g. service role exposed as `NEXT_PUBLIC_*`). Middleware never throws on bad env — it skips session refresh and still serves public pages.
+
+Template: [.env.example](.env.example) · Vercel checklist: [docs/VERCEL_ENV_CHECKLIST.md](docs/VERCEL_ENV_CHECKLIST.md)
+
+**Never** commit `.env.local` or paste API keys into the repo.
 
 ## Supabase
 

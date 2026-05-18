@@ -31,14 +31,14 @@ export function SignOutButton({
       return;
     }
 
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "global" });
 
     if (error) {
       setMessage(error.message);
       return;
     }
 
-    router.push("/");
+    router.replace("/");
     router.refresh();
   }
 

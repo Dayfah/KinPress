@@ -1,6 +1,7 @@
 import { ARTICLE_COLUMNS } from "@/lib/editorial/columns";
 import { formatSupabaseError } from "@/lib/supabase/errors";
-import { getPublicSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
+import { collectPublicEnvIssues } from "@/lib/env/validate";
+import { getPublicEnvIssues, getPublicSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 import { maskSupabaseKey } from "@/lib/supabase/debug";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -29,9 +30,10 @@ export async function runSupabaseDiagnostics(): Promise<SupabaseDiagnosticsRepor
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
   const keyType = publishable ? "publishable" : anon ? "anon" : "missing";
 
-  const serviceRoleDetected = Boolean(process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY?.trim());
+  const dangerousIssues = collectPublicEnvIssues().filter((i) => i.code === "SERVICE_ROLE_EXPOSED");
+  const serviceRoleDetected = dangerousIssues.length > 0;
 
-  if (serviceRoleDetected && process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY) {
+  if (serviceRoleDetected) {
     checks.push({
       name: "Security",
       ok: false,
@@ -41,18 +43,31 @@ export async function runSupabaseDiagnostics(): Promise<SupabaseDiagnosticsRepor
   } else {
     checks.push({
       name: "Security",
-      ok: !process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
+      ok: true,
       detail: "No service role key exposed via NEXT_PUBLIC_ (expected).",
     });
   }
 
+  const envIssues = getPublicEnvIssues();
+  const envErrors = envIssues.filter((i) => i.severity === "error");
+
   checks.push({
     name: "Env vars",
-    ok: envConfigured,
+    ok: envConfigured && envErrors.length === 0,
     detail: envConfigured
       ? `URL present; using ${keyType} key (${maskSupabaseKey(env!.anonKey)}).`
-      : "Missing NEXT_PUBLIC_SUPABASE_URL and/or publishable/anon key.",
+      : envErrors.length > 0
+        ? envErrors.map((i) => i.message).join(" ")
+        : "Missing or invalid NEXT_PUBLIC_SUPABASE_URL and/or publishable/anon key.",
   });
+
+  for (const issue of envIssues.filter((i) => i.severity === "warning")) {
+    checks.push({
+      name: `Env: ${issue.code}`,
+      ok: true,
+      detail: issue.message,
+    });
+  }
 
   const supabase = await createSupabaseServerClient();
 

@@ -3,12 +3,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { sanitizeRedirectPath } from "@/lib/auth/routes";
+import { ensureUserProfile } from "@/lib/auth/profile";
 import { getAuthSiteOrigin, getPublicSupabaseEnv } from "@/lib/supabase/env";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = sanitizeRedirectPath(searchParams.get("next"), "/profile");
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
+  const next = sanitizeRedirectPath(requestUrl.searchParams.get("next"), "/profile");
   const origin = getAuthSiteOrigin();
 
   if (!code) {
@@ -22,6 +23,7 @@ export async function GET(request: Request) {
   }
 
   const cookieStore = await cookies();
+
   const supabase = createServerClient(env.url, env.anonKey, {
     cookies: {
       getAll() {
@@ -38,6 +40,7 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
+    console.error("[KinPress] auth callback exchange failed", error.message);
     return NextResponse.redirect(
       `${origin}/login?error=${encodeURIComponent(error.message)}`,
     );
@@ -48,7 +51,6 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
 
   if (user) {
-    const { ensureUserProfile } = await import("@/lib/auth/profile");
     await ensureUserProfile(supabase, user);
   }
 
