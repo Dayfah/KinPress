@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import {
   Bookmark,
   Compass,
+  Headphones,
   Home,
-  Search,
   User,
 } from "lucide-react";
 
@@ -18,7 +18,7 @@ const icons = {
   today: Home,
   sections: Compass,
   saved: Bookmark,
-  search: Search,
+  listen: Headphones,
   profile: User,
 } as const;
 
@@ -35,7 +35,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      aria-label="Main"
+      aria-label="Mobile toolbar"
       className="kp-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-ink/12 bg-paper/95 backdrop-blur-md md:hidden"
     >
       <ul className="mx-auto flex max-w-lg min-w-0 items-stretch justify-around px-1 pt-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
@@ -46,8 +46,9 @@ export function MobileBottomNav() {
           return (
             <li className="min-w-0 flex-1" key={item.href}>
               <Link
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-[10px] font-bold leading-none transition",
+                  "flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 text-[11px] font-bold leading-none transition",
                   active
                     ? "text-heritage"
                     : "text-muted-brown hover:text-ink",

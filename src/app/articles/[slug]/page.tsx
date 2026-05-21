@@ -4,6 +4,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
+import { ArticleActionBar } from "@/components/article-action-bar";
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
 import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import SaveArticleButton from "@/components/save-article-button";
@@ -221,10 +222,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </aside>
           ) : null}
 
-          <SaveArticleButton
-            articleId={article.id}
-            articlePath={`/articles/${article.slug}`}
-          />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <ArticleActionBar
+              commentCount={comments.length}
+              excerpt={article.excerpt}
+              path={`/articles/${article.slug}`}
+              title={article.title}
+            />
+            <SaveArticleButton
+              articleId={article.id}
+              articlePath={`/articles/${article.slug}`}
+            />
+          </div>
         </header>
 
         <ArticleBody body={article.body} />

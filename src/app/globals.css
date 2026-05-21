@@ -131,6 +131,29 @@ a {
   text-decoration: none;
 }
 
+.kp-skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--bone-white);
+  padding: 0.65rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.5rem);
+}
+
+.kp-skip-link:focus {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
 img,
 video,
 svg {
@@ -545,6 +568,16 @@ svg {
   color: var(--heritage-red);
 }
 
+.kp-icon-button:focus-visible,
+.kp-article-action:focus-visible,
+.kp-home-pill:focus-visible,
+.kp-btn-primary:focus-visible,
+.kp-button:focus-visible {
+  outline: none;
+  border-color: var(--heritage-red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-accent) 35%, transparent);
+}
+
 .kp-theme-toggle-icon {
   transition:
     opacity 160ms ease,
@@ -664,6 +697,65 @@ svg {
 
 .dark .kp-home-card {
   box-shadow: 0 1px 0 color-mix(in srgb, var(--bone-white) 6%, transparent);
+}
+
+.kp-community-card {
+  min-height: 100%;
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--gold-accent) 8%, transparent), transparent 42%),
+    hsl(var(--card));
+  padding: 1.25rem;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink-black) 4%, transparent);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    color 220ms ease,
+    transform 180ms ease;
+}
+
+.kp-community-card:hover {
+  border-color: color-mix(in srgb, var(--heritage-red) 35%, hsl(var(--border)));
+  transform: translateY(-0.125rem);
+}
+
+.kp-article-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kp-article-action {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--card) / 0.86);
+  color: hsl(var(--foreground));
+  padding: 0.55rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.kp-article-action:hover {
+  border-color: color-mix(in srgb, var(--heritage-red) 40%, hsl(var(--border)));
+  color: var(--heritage-red);
+}
+
+.kp-article-action:active {
+  transform: translateY(1px);
 }
 
 .kp-bottom-nav {

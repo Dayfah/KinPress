@@ -7,5 +7,23 @@
     "env": {
       "NODE_OPTIONS": "--max-old-space-size=8192"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/ingest/news",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/ingest/resources",
+      "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/ingest/opportunities",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/ingest/events",
+      "schedule": "45 5 * * *"
+    }
+  ]
 }

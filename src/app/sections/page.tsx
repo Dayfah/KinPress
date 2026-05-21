@@ -36,6 +36,26 @@ export default async function SectionsPage() {
 
         <div className="space-y-8">
           <section>
+            <h2 className="font-serif text-2xl font-semibold text-ink">Community utility</h2>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Resources", href: "/resources" },
+                { label: "Opportunities", href: "/opportunities" },
+                { label: "Events", href: "/events" },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link
+                    className="kp-community-card block font-semibold text-ink"
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
             <h2 className="font-serif text-2xl font-semibold text-ink">Topics</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {ARTICLE_TOPICS.map((topic) => (

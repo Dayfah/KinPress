@@ -92,7 +92,7 @@ export function normalizeArticle(row: ArticleRow): EditorialArticle {
     topic: pickTopic(row.topic),
     kind,
     isPremium: Boolean(row.is_premium),
-    href: isExternal && row.source_url ? row.source_url : `/articles/${row.slug}`,
+    href: `/articles/${row.slug}`,
     isExternal,
   };
 }

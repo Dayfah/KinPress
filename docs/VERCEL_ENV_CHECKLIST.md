@@ -13,7 +13,19 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 
 Copy keys from **Supabase → Project Settings → API** (anon or publishable — **not** service role).
 
-## Optional
+## Server-only ingestion vars
+
+| Variable | Notes |
+|----------|--------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Required only for `/api/ingest/*`; server-side only, no `NEXT_PUBLIC_` prefix |
+| `CRON_SECRET` | Required to authorize `/api/ingest/*` and Vercel Cron calls |
+| `GNEWS_API_KEY` | Optional GNews integration for curated news ingestion |
+| `KINPRESS_NEWS_RSS_FEEDS` | Optional comma-separated RSS feeds; defaults exist |
+| `KINPRESS_RESOURCE_FEED_URLS` | Optional comma-separated JSON feed URLs |
+| `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional comma-separated JSON feed URLs |
+| `KINPRESS_EVENT_FEED_URLS` | Optional comma-separated JSON feed URLs |
+
+## Optional public/debug vars
 
 | Variable | Notes |
 |----------|--------|
@@ -25,9 +37,7 @@ Copy keys from **Supabase → Project Settings → API** (anon or publishable �
 | Variable | Why |
 |----------|-----|
 | `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | **Never** — exposes service role to the browser; build fails if detected |
-| `SUPABASE_SERVICE_ROLE_KEY` | Not used by current app; if added later, server-only, no `NEXT_PUBLIC_` prefix |
 | `ADMIN_EMAILS` | Not referenced in `src/` |
-| `CRON_SECRET` | Not referenced in `src/` |
 
 ## Supabase Auth URL checklist
 
@@ -54,6 +64,7 @@ This prevents `MIDDLEWARE_INVOCATION_FAILED` 500s from bad Supabase client const
 
 1. **Redeploy** on Vercel (env changes do not apply until redeploy).
 2. Confirm build log shows no env validation errors.
-3. Smoke-test: `/`, `/login`, `/articles/<slug>`, `/saved`, `/admin`.
+3. Smoke-test: `/`, `/login`, `/articles/<slug>`, `/saved`, `/resources`, `/opportunities`, `/events`, `/admin`.
+4. Test ingestion with `POST /api/ingest/news` and `Authorization: Bearer <CRON_SECRET>`.
 
 See also [DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md) and [VERCEL_AUDIT.md](./VERCEL_AUDIT.md).

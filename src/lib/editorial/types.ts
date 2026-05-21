@@ -9,11 +9,13 @@ export const ARTICLE_TOPICS = [
   "culture",
   "history",
   "business",
+  "tech",
   "arts",
   "justice",
   "education",
   "health",
   "community",
+  "local",
   "opinion",
 ] as const;
 export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];

@@ -35,8 +35,6 @@ export function EditorialArticleCard({
           isHeroSecondary && "p-0",
         )}
         href={article.href}
-        rel={article.isExternal ? "noopener noreferrer" : undefined}
-        target={article.isExternal ? "_blank" : undefined}
       >
         {article.imageUrl ? (
           <div

@@ -9,13 +9,15 @@ type ThemeToggleProps = {
 };
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const { toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       aria-label="Toggle color theme"
+      aria-pressed={theme === "dark"}
       className={className ?? "kp-icon-button"}
       onClick={toggleTheme}
+      suppressHydrationWarning
       type="button"
     >
       <Moon className="kp-theme-toggle-icon kp-theme-toggle-icon--moon size-4" />

@@ -73,7 +73,11 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
 
       if (isSignup) {
         if (result.data.session) {
-          await fetch("/api/auth/setup", { method: "POST" });
+          const setupResponse = await fetch("/api/auth/setup", { method: "POST" });
+          if (!setupResponse.ok) {
+            setMessage("Your account was created, but profile setup failed. Please try logging in.");
+            return;
+          }
           router.push(afterAuthPath);
           router.refresh();
           return;
@@ -83,7 +87,11 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
         return;
       }
 
-      await fetch("/api/auth/setup", { method: "POST" });
+      const setupResponse = await fetch("/api/auth/setup", { method: "POST" });
+      if (!setupResponse.ok) {
+        setMessage("Logged in, but profile setup failed. Please refresh or contact KinPress support.");
+        return;
+      }
       router.push(afterAuthPath);
       router.refresh();
     } catch (error) {

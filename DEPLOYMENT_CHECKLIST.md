@@ -47,6 +47,8 @@ You can use **either** dashboard defaults **or** `vercel.json` — both are alig
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes* | Anon JWT from Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes* | `sb_publishable_…` (preferred alternative to anon) |
 | `NEXT_PUBLIC_SITE_URL` | **Yes** | `https://kin-press.vercel.app` |
+| `SUPABASE_SERVICE_ROLE_KEY` | For ingestion | Server-only Supabase service role key |
+| `CRON_SECRET` | For ingestion | Shared secret for `/api/ingest/*` and Vercel Cron |
 
 \* Set **one** of anon or publishable key (not both required).
 
@@ -55,15 +57,18 @@ You can use **either** dashboard defaults **or** `vercel.json` — both are alig
 | Variable | Why |
 |----------|-----|
 | `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Exposes secret to browser; build fails if detected |
-| `SUPABASE_SERVICE_ROLE_KEY` | Not used by app today |
 | `ADMIN_EMAILS` | Not referenced in `src/` |
-| `CRON_SECRET` | Not referenced in `src/` |
 
 **Optional:**
 
 | Variable | Purpose |
 |----------|---------|
 | `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | `true` → enables `/debug/supabase` in production |
+| `GNEWS_API_KEY` | Optional curated news API ingestion |
+| `KINPRESS_NEWS_RSS_FEEDS` | Optional approved RSS override |
+| `KINPRESS_RESOURCE_FEED_URLS` | Optional verified resource JSON feeds |
+| `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional verified opportunity JSON feeds |
+| `KINPRESS_EVENT_FEED_URLS` | Optional verified event JSON feeds |
 
 On Vercel (`VERCEL=1`), `next.config.ts` runs env validation at build time — missing/invalid vars **fail the build** with a clear message instead of a runtime `MIDDLEWARE_INVOCATION_FAILED` 500.
 

@@ -1,6 +1,6 @@
 # KinPress
 
-KinPress is a Black-centered digital news platform covering culture, politics, history, business, art, and community stories with depth, clarity, and style. Readers get an Apple News–inspired homepage; editors publish original stories and curated external briefs through Supabase.
+KinPress is a Black-centered digital news, culture, resources, opportunities, and recommendations platform. Readers get a premium mobile-first editorial experience; editors and protected ingestion jobs publish original stories, curated external briefs, verified resources, opportunities, and events through Supabase.
 
 **Live:** https://kin-press.vercel.app  
 **Repo:** https://github.com/Dayfah/KinPress
@@ -27,6 +27,8 @@ Edit `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-key>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+SUPABASE_SERVICE_ROLE_KEY=<server-only-key-for-ingestion>
+CRON_SECRET=<local-ingestion-secret>
 ```
 
 Run migrations and seed in Supabase (see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)), then:
@@ -39,7 +41,7 @@ Open http://localhost:3000.
 
 ## Environment variables
 
-All Supabase access from the app uses **browser-safe** `NEXT_PUBLIC_*` keys only (anon or publishable). There is **no** `SUPABASE_SERVICE_ROLE_KEY` usage in `src/`.
+Reader-facing Supabase access uses browser-safe `NEXT_PUBLIC_*` keys only. Ingestion routes use `SUPABASE_SERVICE_ROLE_KEY` server-side and require `CRON_SECRET`.
 
 | Variable | Vercel | Local | Safe in browser? |
 |----------|--------|-------|------------------|
@@ -48,16 +50,17 @@ All Supabase access from the app uses **browser-safe** `NEXT_PUBLIC_*` keys only
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes* | Yes* | Yes |
 | `NEXT_PUBLIC_SITE_URL` | **Required** | Recommended | Yes |
 | `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | Optional | Optional | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for ingestion | Optional unless testing ingestion | No |
+| `CRON_SECRET` | Required for ingestion | Optional unless testing ingestion | No |
+| `GNEWS_API_KEY` | Optional | Optional | No |
+| `KINPRESS_NEWS_RSS_FEEDS` | Optional | Optional | No |
+| `KINPRESS_RESOURCE_FEED_URLS` | Optional | Optional | No |
+| `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional | Optional | No |
+| `KINPRESS_EVENT_FEED_URLS` | Optional | Optional | No |
 
 \* Set **one** of publishable or anon key (not both required).
 
-**Not used by the app** (do not add unless you implement new server features):
-
-| Variable | Notes |
-|----------|--------|
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only secret — never `NEXT_PUBLIC_*` |
-| `ADMIN_EMAILS` | Not referenced in code |
-| `CRON_SECRET` | Not referenced in code |
+**Never** prefix service role, cron, or content API keys with `NEXT_PUBLIC_`.
 
 **Validation:** On Vercel/CI, `npm run build` fails with a clear error if required vars are missing, invalid, or unsafe (e.g. service role exposed as `NEXT_PUBLIC_*`). Middleware never throws on bad env — it skips session refresh and still serves public pages.
 
@@ -72,7 +75,7 @@ Template: [.env.example](.env.example) · Vercel checklist: [docs/VERCEL_ENV_CHE
 3. Configure Auth redirect URLs (`/auth/callback`).
 4. Promote an admin: `update profiles set role = 'admin' where id = '…';`
 
-**Tables used:** `profiles`, `authors`, `articles`, `categories`, `saved_articles`, `comments`.
+**Tables used:** `profiles`, `authors`, `articles`, `categories`, `saved_articles`, `comments`, `resources`, `opportunities`, `events`, `user_preferences`, `ingestion_runs`.
 
 ## Deploy to Vercel
 
@@ -102,6 +105,7 @@ No automated test suite yet — use the deployment checklist for manual QA.
 | `/topic/[topic]` | Public | Section pages |
 | `/articles/[slug]` | Public | Article detail |
 | `/search`, `/latest`, `/sections` | Public | Discovery |
+| `/resources`, `/opportunities`, `/events`, `/listen` | Public | Utility, recommendations, and audio surfaces |
 | `/categories/[slug]` | Public | Category archive |
 | `/login`, `/signup` | Public | Email/password auth |
 | `/profile`, `/saved`, `/for-you` | Auth | Reader features |
@@ -110,9 +114,20 @@ No automated test suite yet — use the deployment checklist for manual QA.
 ## Auth
 
 - Email/password via Supabase Auth
-- Callback: `/auth/callback` (email confirmation)
-- Profile bootstrap: DB trigger + `POST /api/auth/setup`
+- Callback: `/auth/callback` supports PKCE `code` and token-hash email confirmation links
+- Profile bootstrap: DB trigger + checked `POST /api/auth/setup`
 - Protected routes enforced in middleware (`/profile`, `/saved`, `/for-you`, `/admin/*`)
+
+## Content ingestion
+
+Protected routes:
+
+- `POST /api/ingest/news`
+- `POST /api/ingest/resources`
+- `POST /api/ingest/opportunities`
+- `POST /api/ingest/events`
+
+Call with `Authorization: Bearer <CRON_SECRET>`. News ingestion uses approved RSS feeds by default and `GNEWS_API_KEY` when present. Resource, opportunity, and event ingestion read configured JSON feeds and upsert only records with source URLs.
 
 ## Admin / editor
 

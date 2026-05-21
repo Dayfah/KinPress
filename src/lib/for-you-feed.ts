@@ -44,11 +44,13 @@ function topicLabels(topics: ArticleTopic[]) {
     culture: "Culture",
     history: "History",
     business: "Business",
+    tech: "Tech",
     arts: "Arts",
     justice: "Justice",
     education: "Education",
     health: "Health",
     community: "Community",
+    local: "Local",
     opinion: "Opinion",
   };
   return topics.map((topic) => labels[topic]);

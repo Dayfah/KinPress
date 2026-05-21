@@ -1,7 +1,10 @@
+import { CommunityHighlights } from "@/components/community/community-highlights";
 import { ArticleRailSection } from "@/components/editorial/article-rail";
+import { HomeCategoryTabs } from "@/components/editorial/home-category-tabs";
 import { HomeHero } from "@/components/editorial/home-hero";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { SupabaseQueryError } from "@/components/supabase-query-error";
+import { getEvents, getOpportunities, getResources } from "@/lib/community/content";
 import { getHomepageData } from "@/lib/editorial/articles";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -16,7 +19,17 @@ export default async function Home() {
     );
   }
 
-  const { hero, rails, loadError } = await getHomepageData();
+  const [
+    { hero, rails, loadError },
+    { items: resources },
+    { items: opportunities },
+    { items: events },
+  ] = await Promise.all([
+    getHomepageData(),
+    getResources(4),
+    getOpportunities(4),
+    getEvents(4),
+  ]);
   const hasContent = Boolean(hero.lead) || rails.length > 0;
 
   return (
@@ -29,11 +42,18 @@ export default async function Home() {
           />
         ) : null}
 
+        <HomeCategoryTabs />
         <HomeHero hero={hero} />
 
         {rails.map((rail) => (
           <ArticleRailSection key={rail.id} rail={rail} />
         ))}
+
+        <CommunityHighlights
+          events={events}
+          opportunities={opportunities}
+          resources={resources}
+        />
 
         {!hasContent ? (
           <p className="text-center text-sm text-ink/65">

@@ -66,8 +66,14 @@ export default async function RootLayout({
             initialProfile={initialAuth.profile}
             initialUser={initialAuth.user}
           >
+            <a className="kp-skip-link" href="#main-content">
+              Skip to content
+            </a>
             <SiteHeader />
-            <div className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
+            <div
+              className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0"
+              id="main-content"
+            >
               {children}
             </div>
             <div className="hidden md:block">
