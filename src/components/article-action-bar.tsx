@@ -66,7 +66,12 @@ export function ArticleActionBar({
         <Share2 className="size-4" />
         Share
       </button>
-      <button className="kp-article-action" onClick={listen} type="button">
+      <button
+        aria-pressed={listening}
+        className="kp-article-action"
+        onClick={listen}
+        type="button"
+      >
         <Headphones className="size-4" />
         {listening ? "Stop" : "Listen"}
       </button>
@@ -74,6 +79,9 @@ export function ArticleActionBar({
         {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
         {copied ? "Copied" : "Copy"}
       </button>
+      <span className="sr-only" aria-live="polite">
+        {copied ? "Article link copied." : ""}
+      </span>
       <span className="kp-article-action" aria-label={`${commentCount} comments`}>
         <MessageCircle className="size-4" />
         {commentCount} comments

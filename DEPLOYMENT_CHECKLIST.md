@@ -188,8 +188,8 @@ Local repo has the corrected `@supabase/ssr` middleware. **Push to `main` and re
 
 ## Pre-deploy (Supabase)
 
-- [ ] Migrations 001 → 002 → audit fix → 003 applied
-- [ ] Seed or real articles published
+- [ ] Migrations 001 → 002_editorial_fields → kinpress_production_audit_fix → 003 → 004 → 005 applied
+- [ ] Real articles ingested/published; optional verified starter resources seeded
 - [ ] Auth Site URL + redirect URLs (above)
 - [ ] At least one `profiles.role = 'admin'`
 - [ ] Storage bucket `article-covers` exists

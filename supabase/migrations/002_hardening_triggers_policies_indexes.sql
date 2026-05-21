@@ -50,15 +50,18 @@ using (public.is_admin_or_editor(auth.uid()))
 with check (public.is_admin_or_editor(auth.uid()));
 
 -- explicit saved_articles policies to avoid relying on FOR ALL semantics only
-create policy if not exists "Users read own saves" on public.saved_articles
+drop policy if exists "Users read own saves" on public.saved_articles;
+create policy "Users read own saves" on public.saved_articles
 for select
 using (auth.uid() = user_id);
 
-create policy if not exists "Users insert own saves" on public.saved_articles
+drop policy if exists "Users insert own saves" on public.saved_articles;
+create policy "Users insert own saves" on public.saved_articles
 for insert
 with check (auth.uid() = user_id);
 
-create policy if not exists "Users delete own saves" on public.saved_articles
+drop policy if exists "Users delete own saves" on public.saved_articles;
+create policy "Users delete own saves" on public.saved_articles
 for delete
 using (auth.uid() = user_id);
 

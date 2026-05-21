@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
 import { CategoryPill } from "@/components/category-pill";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { ARTICLE_COLUMNS } from "@/lib/editorial/columns";
 import { normalizeArticle, type ArticleRow } from "@/lib/editorial/normalize";
 import type { CategoryRecord } from "@/lib/content";
@@ -82,6 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <main className="min-h-screen">
       <section className="kp-shell mx-auto flex w-full max-w-7xl flex-col gap-10 py-8 sm:py-10">
         <header className="space-y-6 border-b border-ink/15 pb-8">
+          <ThemeAwareLogo showWordmark={false} size="sm" />
           <p className="kp-eyebrow">Category</p>
           <h1 className="max-w-3xl font-serif text-4xl leading-tight tracking-editorial text-ink sm:text-5xl">
             {category.name ?? slug}

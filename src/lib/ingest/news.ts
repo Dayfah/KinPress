@@ -107,7 +107,7 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   };
   const { data: existing, error: lookupError } = await supabase
     .from("articles")
-    .select("id")
+    .select("id, slug")
     .eq("source_url", item.link)
     .maybeSingle<{ id: string }>();
 
@@ -115,8 +115,9 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     return lookupError;
   }
 
+  const { slug: _newSlug, ...updatePayload } = payload;
   const { error } = existing
-    ? await supabase.from("articles").update(payload).eq("id", existing.id)
+    ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
 
   return error;

@@ -552,6 +552,7 @@ svg {
 
 .kp-icon-button {
   display: inline-flex;
+  position: relative;
   align-items: center;
   justify-content: center;
   border: 1px solid hsl(var(--border));
@@ -607,13 +608,13 @@ svg {
 }
 
 .kp-invert-band {
-  background: var(--ink-black);
-  color: var(--bone-white);
+  background: #111111;
+  color: #f5f0e8;
 }
 
 .kp-invert-band .kp-btn-outline {
-  border-color: color-mix(in srgb, var(--bone-white) 35%, transparent);
-  color: var(--bone-white);
+  border-color: color-mix(in srgb, #f5f0e8 35%, transparent);
+  color: #f5f0e8;
 }
 
 .kp-invert-band .kp-btn-outline:hover {

@@ -8,7 +8,7 @@ export async function SiteFooter() {
   const { showAdmin } = await getMastheadSession();
 
   return (
-    <footer className="mt-16 border-t border-ink/15 bg-ink text-bone">
+    <footer className="mt-16 border-t border-white/10 bg-[#111111] text-[#f5f0e8]">
       <div className="kp-shell grid gap-8 py-10 sm:py-12 md:grid-cols-[1fr_auto] md:items-start">
         <div className="min-w-0">
           <KinPressLogo showWordmark tone="onDark" />

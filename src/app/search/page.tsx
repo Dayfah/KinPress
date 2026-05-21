@@ -60,7 +60,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       : [];
 
   return (
-    <main className="min-h-screen min-w-0">
+    <main className="min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-shell flex w-full max-w-5xl flex-col gap-8 py-10">
         <header className="space-y-2 border-b border-ink/15 pb-8">
           <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />

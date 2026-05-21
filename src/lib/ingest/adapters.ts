@@ -195,6 +195,8 @@ export async function fetchGrantsGovOpportunities() {
         source_url: `https://www.grants.gov/search-results-detail/${id}`,
         date_verified: new Date().toISOString().slice(0, 10),
         tags: ["grants", "federal", "verified"],
+        is_verified: true,
+        status: "published",
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -247,6 +249,8 @@ export async function fetchEventbriteEvents() {
         image_url: normalizeUrl(event.logo?.url),
         price: event.is_free ? "Free" : "See source",
         tags: ["events", "community", "verified"],
+        is_verified: true,
+        status: "published",
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));

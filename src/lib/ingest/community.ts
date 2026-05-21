@@ -160,10 +160,6 @@ export async function ingestCommunityFeed(
   let itemsSeen = 0;
   let itemsUpserted = 0;
 
-  if (feeds.length === 0) {
-    errors.push(`${envName} is not configured.`);
-  }
-
   for (const feed of feeds) {
     try {
       const records = await fetchJsonFeed(feed);

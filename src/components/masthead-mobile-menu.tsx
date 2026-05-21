@@ -97,7 +97,7 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
             <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white/45">
               Account
             </span>
-            <ThemeToggle className="inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white/90 transition hover:bg-white/10" />
+            <ThemeToggle className="relative inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white/90 transition hover:bg-white/10" />
           </div>
           <HeaderAuthActions
             isLoggedIn={isLoggedIn}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ContentEmptyState } from "@/components/editorial/content-empty-state";
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { getArticlesByTopic } from "@/lib/editorial/articles";
 import { ARTICLE_TOPICS, type ArticleTopic } from "@/lib/editorial/types";
 import { KINPRESS_DESCRIPTION } from "@/lib/brand";
@@ -46,6 +47,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
     <main className="kp-home min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-shell max-w-6xl space-y-8 py-10">
         <header className="min-w-0 border-b border-ink/15 pb-6">
+          <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />
           <p className="kp-eyebrow">Section</p>
           <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight text-ink sm:text-5xl">
             {label}

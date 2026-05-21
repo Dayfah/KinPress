@@ -27,6 +27,7 @@ type ArticlePageProps = {
     slug: string;
   }>;
   searchParams?: Promise<{
+    comment_error?: string;
     save_error?: string;
   }>;
 };
@@ -109,7 +110,7 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
   });
 
   if (error) {
-    throw new Error(`Unable to add comment: ${error.message}`);
+    redirect(`/articles/${slug}?comment_error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/articles/${slug}`);
@@ -157,7 +158,7 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
         {article.imageUrl ? (
           <figure className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-ink/10">
             <Image
-              alt=""
+              alt={article.title}
               className="object-cover"
               fill
               priority
@@ -241,6 +242,11 @@ export default async function ArticlePage({ params, searchParams }: ArticlePageP
           {query?.save_error ? (
             <p className="rounded-xl border border-heritage/25 bg-heritage/10 px-4 py-3 text-sm font-semibold text-heritage">
               {query.save_error}
+            </p>
+          ) : null}
+          {query?.comment_error ? (
+            <p className="rounded-xl border border-heritage/25 bg-heritage/10 px-4 py-3 text-sm font-semibold text-heritage">
+              Unable to post comment: {query.comment_error}
             </p>
           ) : null}
         </header>

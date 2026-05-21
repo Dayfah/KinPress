@@ -42,7 +42,10 @@ export function CommentCard({
 
         <div className="min-w-0">
           <p className="truncate font-medium text-foreground">{displayName}</p>
-          <time className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          <time
+            className="text-xs uppercase tracking-[0.12em] text-muted-foreground"
+            dateTime={createdAt}
+          >
             {formatCommentDate(createdAt)}
           </time>
         </div>

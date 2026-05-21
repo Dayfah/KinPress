@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { Menu } from "lucide-react";
 
 import { KinPressLogo } from "@/components/kinpress-logo";
+import { MastheadNavLink } from "@/components/masthead-nav-link";
 import { MastheadMobileMenu } from "@/components/masthead-mobile-menu";
 import { HeaderAuthActions } from "@/components/header-auth-actions";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -26,23 +26,25 @@ export async function SiteHeader() {
         >
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {navLinks.map((link) => (
-              <Link
+              <MastheadNavLink
+                activeClassName="border-heritage/45 bg-heritage/10 text-heritage"
                 className="rounded-full border border-ink/15 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-muted-brown transition hover:border-heritage/40 hover:text-foreground"
                 href={link.href}
                 key={link.href}
               >
                 {link.label}
-              </Link>
+              </MastheadNavLink>
             ))}
             <span aria-hidden className="mx-1 h-4 w-px bg-ink/15" />
             {utilityNavLinks.map((link) => (
-              <Link
+              <MastheadNavLink
+                activeClassName="text-heritage"
                 className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-brown transition hover:text-foreground"
                 href={link.href}
                 key={link.href}
               >
                 {link.label}
-              </Link>
+              </MastheadNavLink>
             ))}
           </div>
         </nav>

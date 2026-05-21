@@ -14,8 +14,9 @@
 ### Strongly recommended
 - `NEXT_PUBLIC_SITE_URL` (for auth callback origin)
 
-### Optional server-side
-- `GNEWS_API_KEY` (without this key the app falls back to mock news content)
+### Optional server-side ingestion
+- `GNEWS_API_KEY`, `NEWS_API_KEY`, `GUARDIAN_API_KEY`, `EVENTBRITE_API_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` are required for protected ingestion routes.
 
 ### Not used in application code
 - `SUPABASE_SERVICE_ROLE_KEY` is not required by the current code paths and must remain server-only if introduced later.
@@ -26,7 +27,7 @@
 - Middleware client: `src/lib/supabase/middleware.ts`
 - Auth callback route: `src/app/auth/callback/route.ts`
 - Profile creation/sync: `src/lib/auth/profile.ts` and `src/app/api/auth/setup/route.ts`
-- Saved articles: `src/components/save-article-button.tsx` and `src/lib/articles.ts`
+- Saved articles: `src/components/save-article-button.tsx` and `src/lib/editorial/saved.ts`
 - Admin role checks: `src/lib/auth/guards.ts`
 - Admin publish flow: `src/app/admin/articles/new/page.tsx`
 
@@ -37,7 +38,7 @@ The app uses at minimum:
 - `saved_articles`
 
 It also expects:
-- `authors`, `categories`, `comments`, `tags`, `article_tags`, and storage bucket `article-covers`.
+- `authors`, `categories`, `comments`, `resources`, `opportunities`, `events`, `user_preferences`, `ingestion_runs`, `tags`, `article_tags`, and storage bucket `article-covers`.
 
 ## Migration status
 - Existing baseline migration verified: `supabase/migrations/001_kinpress_schema.sql` (tables + RLS + `handle_new_user`).
@@ -50,10 +51,12 @@ It also expects:
 ## Manual platform settings (if not already configured)
 
 ### Vercel env vars
-- `NEXT_PUBLIC_SUPABASE_URL=https://ounxtggirrybbkuyeiiu.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_URL=https://kfpaevryzgnjllqaihtf.supabase.co`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>`
 - `NEXT_PUBLIC_SITE_URL=https://kin-press.vercel.app`
-- `GNEWS_API_KEY=b7619a590046d0b036d305dfcb701273` (optional but recommended for live news)
+- `CRON_SECRET=<secret>`
+- `SUPABASE_SERVICE_ROLE_KEY=<server-only key>`
+- Optional content API keys as documented in `.env.example`.
 
 Do not set `SUPABASE_SERVICE_ROLE_KEY` as `NEXT_PUBLIC_*`.
 

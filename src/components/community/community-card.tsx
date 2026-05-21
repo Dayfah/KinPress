@@ -35,6 +35,7 @@ function CardShell({
     <article className="kp-community-card group">
       <Link href={href} rel="noopener noreferrer" target="_blank">
         {children}
+        <span className="sr-only"> Opens in a new tab.</span>
       </Link>
     </article>
   );
@@ -60,12 +61,12 @@ export function ResourceCard({ resource }: { resource: CommunityResource }) {
       <MetaRow>
         {resource.location ? (
           <>
-            <MapPin className="size-4" />
+            <MapPin aria-hidden className="size-4" />
             {resource.location}
           </>
         ) : (
           <>
-            <ExternalLink className="size-4" />
+            <ExternalLink aria-hidden className="size-4" />
             Verified resource
           </>
         )}
@@ -92,7 +93,7 @@ export function OpportunityCard({ opportunity }: { opportunity: CommunityOpportu
       </div>
       {deadline ? (
         <MetaRow>
-          <CalendarDays className="size-4" />
+          <CalendarDays aria-hidden className="size-4" />
           Deadline {deadline}
         </MetaRow>
       ) : null}
@@ -116,7 +117,7 @@ export function EventCard({ event }: { event: CommunityEvent }) {
         </p>
       ) : null}
       <MetaRow>
-        <CalendarDays className="size-4" />
+        <CalendarDays aria-hidden className="size-4" />
         {startsAt ?? "Date at source"}
         {event.location ? ` · ${event.location}` : ""}
       </MetaRow>

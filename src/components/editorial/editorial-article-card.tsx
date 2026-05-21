@@ -53,7 +53,7 @@ export function EditorialArticleCard({
           </div>
         ) : null}
 
-        <div>
+        <div className={cn(!isCompact && "p-4 sm:p-5")}>
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-muted-brown sm:text-[11px]">
             <span className="text-heritage">{article.category}</span>
             {article.isVerified ? (

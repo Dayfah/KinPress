@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { requireAuthenticatedUser } from "@/lib/auth/guards";
 import { getForYouFeed } from "@/lib/for-you-feed";
@@ -28,6 +29,7 @@ export default async function ForYouPage() {
   return (
     <main className="min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-shell max-w-5xl space-y-4 py-10">
+        <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />
         <p className="kp-eyebrow">For You</p>
         <h1 className="kp-heading font-semibold tracking-editorial text-ink">
           Picked for your reading list

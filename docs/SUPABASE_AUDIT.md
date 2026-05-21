@@ -11,10 +11,10 @@
 | Area | Status | Notes |
 |------|--------|--------|
 | Auth (email/password) | Ready | No OAuth in UI; callback used for email confirm |
-| Core tables | Ready | profiles, articles, saved_articles, categories, comments, authors |
-| RLS | Ready after migrations | Run 001 → 002 → `kinpress_production_audit_fix` → **003** |
+| Core tables | Ready | profiles, articles, saved_articles, categories, comments, authors, resources, opportunities, events |
+| RLS | Ready after migrations | Run 001 → 002_editorial_fields → `kinpress_production_audit_fix` → 003 → 004 → 005 |
 | Storage | Ready | Bucket `article-covers` (public); admin upload policies |
-| Seed data | Ready | `seed_editorial.sql` — editorial samples, not fake breaking news |
+| Seed data | Ready | `seed_editorial.sql` — verified resource/opportunity/event records only; no fake articles |
 | Legacy tables | Unused | `tags`, `article_tags` — no app queries |
 
 **Code fix applied:** Migration `003_supabase_app_alignment.sql` adds missing **authors INSERT** policy (required by `ensureUserProfile()`).

@@ -175,6 +175,7 @@ grant usage on schema public to anon, authenticated;
 grant select on table public.resources to anon, authenticated;
 grant select on table public.opportunities to anon, authenticated;
 grant select on table public.events to anon, authenticated;
+grant select, insert, delete on table public.saved_articles to authenticated;
 grant select, insert, update on table public.user_preferences to authenticated;
 grant insert, update, delete on table public.resources to authenticated;
 grant insert, update, delete on table public.opportunities to authenticated;
