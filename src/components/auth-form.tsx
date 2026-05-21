@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useAuth } from "@/components/auth/auth-provider";
 import { KinPressLogo } from "@/components/kinpress-logo";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { KINPRESS_DESCRIPTION } from "@/lib/brand";
@@ -20,6 +21,7 @@ type AuthFormProps = {
 
 export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProps) {
   const router = useRouter();
+  const auth = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(initialError);
@@ -30,7 +32,7 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
 
   const authHeader = (
     <>
-      <KinPressLogo className="mb-6 dark:[&_img]:brightness-0 dark:[&_img]:invert" />
+      <KinPressLogo className="mb-6" priority />
       <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
       <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
         {isSignup ? "Join KinPress" : "Log in to KinPress"}
@@ -73,7 +75,12 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
 
       if (isSignup) {
         if (result.data.session) {
-          await fetch("/api/auth/setup", { method: "POST" });
+          const setupResponse = await fetch("/api/auth/setup", { method: "POST" });
+          if (!setupResponse.ok) {
+            setMessage("Your account was created, but profile setup failed. Please try logging in.");
+            return;
+          }
+          await auth.refresh();
           router.push(afterAuthPath);
           router.refresh();
           return;
@@ -83,7 +90,12 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
         return;
       }
 
-      await fetch("/api/auth/setup", { method: "POST" });
+      const setupResponse = await fetch("/api/auth/setup", { method: "POST" });
+      if (!setupResponse.ok) {
+        setMessage("Logged in, but profile setup failed. Please refresh or contact KinPress support.");
+        return;
+      }
+      await auth.refresh();
       router.push(afterAuthPath);
       router.refresh();
     } catch (error) {

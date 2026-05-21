@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { ARTICLE_TOPICS } from "@/lib/editorial/types";
 import { TOPIC_LABELS } from "@/lib/masthead-nav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,6 +26,7 @@ export default async function SectionsPage() {
     <main className="kp-home min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-shell max-w-5xl space-y-10 py-10">
         <header className="min-w-0 border-b border-ink/15 pb-6">
+          <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />
           <p className="kp-eyebrow">Sections</p>
           <h1 className="mt-2 font-serif text-4xl font-bold text-ink">Browse by topic</h1>
           <p className="mt-3 text-sm leading-7 text-ink/70">
@@ -33,6 +35,26 @@ export default async function SectionsPage() {
         </header>
 
         <div className="space-y-8">
+          <section>
+            <h2 className="font-serif text-2xl font-semibold text-ink">Community utility</h2>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Resources", href: "/resources" },
+                { label: "Opportunities", href: "/opportunities" },
+                { label: "Events", href: "/events" },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link
+                    className="kp-community-card block font-semibold text-ink"
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <section>
             <h2 className="font-serif text-2xl font-semibold text-ink">Topics</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">

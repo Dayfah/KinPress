@@ -339,7 +339,7 @@ grant select on table public.comments to anon, authenticated;
 
 grant insert, update on table public.profiles to authenticated;
 grant insert on table public.authors to authenticated;
-grant insert, delete on table public.saved_articles to authenticated;
+grant select, insert, delete on table public.saved_articles to authenticated;
 grant insert, delete on table public.comments to authenticated;
 grant insert, update, delete on table public.articles to authenticated;
 

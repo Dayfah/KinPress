@@ -11,6 +11,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -44,9 +45,12 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
         side="right"
       >
         <SheetTitle className="sr-only">KinPress navigation</SheetTitle>
+        <SheetDescription className="sr-only">
+          Browse KinPress sections, account links, and theme controls.
+        </SheetDescription>
 
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
-          <KinPressLogo className="text-white [&_span]:text-white" showWordmark />
+          <KinPressLogo showWordmark tone="onDark" />
           <SheetClose asChild>
             <button
               aria-label="Close menu"
@@ -89,11 +93,11 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
         </nav>
 
         <footer className="shrink-0 border-t border-white/10 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-          <div>
+          <div className="flex items-center justify-between gap-3">
             <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white/45">
               Account
             </span>
-            <ThemeToggle className="inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white/90 transition hover:bg-white/10" />
+            <ThemeToggle className="relative inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white/90 transition hover:bg-white/10" />
           </div>
           <HeaderAuthActions
             isLoggedIn={isLoggedIn}

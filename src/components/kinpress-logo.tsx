@@ -3,38 +3,92 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-type KinPressLogoProps = {
+const LOGO_DARK_SRC = "/kinpress-logo-mark-dark.svg";
+const LOGO_LIGHT_SRC = "/kinpress-logo-mark-light.svg";
+
+export const KINPRESS_LOGO_ASSETS = {
+  dark: LOGO_DARK_SRC,
+  light: LOGO_LIGHT_SRC,
+} as const;
+
+type ThemeAwareLogoProps = {
   className?: string;
-  href?: string;
+  href?: string | null;
+  markClassName?: string;
+  priority?: boolean;
   showWordmark?: boolean;
+  size?: "sm" | "md" | "lg" | "splash";
+  tone?: "theme" | "onDark" | "onLight";
 };
 
-export function KinPressLogo({
+const sizeClassName = {
+  sm: "kp-logo--sm",
+  md: "kp-logo--md",
+  lg: "kp-logo--lg",
+  splash: "kp-logo--splash",
+} as const;
+
+const toneClassName = {
+  theme: "kp-logo--theme",
+  onDark: "kp-logo--on-dark",
+  onLight: "kp-logo--on-light",
+} as const;
+
+export function ThemeAwareLogo({
   className,
   href = "/",
+  markClassName,
+  priority = false,
   showWordmark = true,
-}: KinPressLogoProps) {
-  return (
-    <Link
-      className={cn(
-        "inline-flex min-w-0 max-w-full items-center gap-2.5 text-ink transition hover:opacity-90",
-        className,
-      )}
-      href={href}
-    >
-      <Image
-        alt=""
-        className="size-9 shrink-0 dark:brightness-0 dark:invert sm:size-10"
-        height={40}
-        priority
-        src="/kinpress-logo.svg"
-        width={40}
-      />
+  size = "md",
+  tone = "theme",
+}: ThemeAwareLogoProps) {
+  const content = (
+    <>
+      <span className={cn("kp-logo-mark", markClassName)} aria-hidden="true">
+        <Image
+          alt=""
+          className="kp-logo-image kp-logo-image--dark"
+          height={40}
+          priority={priority}
+          src={LOGO_DARK_SRC}
+          width={40}
+        />
+        <Image
+          alt=""
+          className="kp-logo-image kp-logo-image--light"
+          height={40}
+          priority={priority}
+          src={LOGO_LIGHT_SRC}
+          width={40}
+        />
+      </span>
       {showWordmark ? (
-        <span className="min-w-0 font-serif text-xl font-bold leading-none tracking-tight text-inherit sm:text-2xl">
+        <span className="kp-logo-wordmark">
           KinPress
         </span>
       ) : null}
+    </>
+  );
+
+  const logoClassName = cn(
+    "kp-logo",
+    sizeClassName[size],
+    toneClassName[tone],
+    className,
+  );
+
+  if (!href) {
+    return <span className={logoClassName}>{content}</span>;
+  }
+
+  return (
+    <Link aria-label="KinPress home" className={logoClassName} href={href}>
+      {content}
     </Link>
   );
+}
+
+export function KinPressLogo(props: ThemeAwareLogoProps) {
+  return <ThemeAwareLogo {...props} />;
 }

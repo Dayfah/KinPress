@@ -23,5 +23,6 @@ export const ARTICLE_COLUMNS = `
   region,
   topic,
   article_kind,
-  is_premium
+  is_premium,
+  is_verified
 `;

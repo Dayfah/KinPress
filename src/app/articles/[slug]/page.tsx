@@ -4,7 +4,9 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
+import { ArticleActionBar } from "@/components/article-action-bar";
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import SaveArticleButton from "@/components/save-article-button";
 import {
   CommentSection,
@@ -23,6 +25,10 @@ type CommentProfile = {
 type ArticlePageProps = {
   params: Promise<{
     slug: string;
+  }>;
+  searchParams?: Promise<{
+    comment_error?: string;
+    save_error?: string;
   }>;
 };
 
@@ -104,15 +110,16 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
   });
 
   if (error) {
-    throw new Error(`Unable to add comment: ${error.message}`);
+    redirect(`/articles/${slug}?comment_error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/articles/${slug}`);
   redirect(`/articles/${slug}`);
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage({ params, searchParams }: ArticlePageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -151,7 +158,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         {article.imageUrl ? (
           <figure className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-ink/10">
             <Image
-              alt=""
+              alt={article.title}
               className="object-cover"
               fill
               priority
@@ -162,6 +169,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         ) : null}
 
         <header className="space-y-6 border-b border-ink/15 pb-10">
+          <ThemeAwareLogo
+            className="opacity-85"
+            showWordmark={false}
+            size="sm"
+          />
           <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-muted-brown">
             <span className="text-heritage">{article.category}</span>
             <span className="text-ink/40" aria-hidden>
@@ -215,10 +227,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </aside>
           ) : null}
 
-          <SaveArticleButton
-            articleId={article.id}
-            articlePath={`/articles/${article.slug}`}
-          />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <ArticleActionBar
+              commentCount={comments.length}
+              excerpt={article.excerpt}
+              path={`/articles/${article.slug}`}
+              title={article.title}
+            />
+            <SaveArticleButton
+              articleId={article.id}
+              articlePath={`/articles/${article.slug}`}
+            />
+          </div>
+          {query?.save_error ? (
+            <p className="rounded-xl border border-heritage/25 bg-heritage/10 px-4 py-3 text-sm font-semibold text-heritage">
+              {query.save_error}
+            </p>
+          ) : null}
+          {query?.comment_error ? (
+            <p className="rounded-xl border border-heritage/25 bg-heritage/10 px-4 py-3 text-sm font-semibold text-heritage">
+              Unable to post comment: {query.comment_error}
+            </p>
+          ) : null}
         </header>
 
         <ArticleBody body={article.body} />

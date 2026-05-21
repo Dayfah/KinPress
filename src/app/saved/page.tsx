@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { getSavedEditorialArticles } from "@/lib/editorial/saved";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,14 +26,15 @@ export default async function SavedArticlesPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?next=/saved");
   }
 
   const articles = await getSavedEditorialArticles(user.id);
 
   return (
     <main className="min-h-screen min-w-0 overflow-x-hidden">
-      <section className="kp-page-container max-w-5xl space-y-5">
+      <section className="kp-page-container max-w-5xl space-y-5 py-10">
+        <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />
         <p className="kp-eyebrow">Saved articles</p>
         <h1 className="kp-heading font-semibold tracking-editorial text-foreground">
           Your reading list

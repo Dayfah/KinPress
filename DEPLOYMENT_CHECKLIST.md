@@ -47,6 +47,8 @@ You can use **either** dashboard defaults **or** `vercel.json` — both are alig
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes* | Anon JWT from Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes* | `sb_publishable_…` (preferred alternative to anon) |
 | `NEXT_PUBLIC_SITE_URL` | **Yes** | `https://kin-press.vercel.app` |
+| `SUPABASE_SERVICE_ROLE_KEY` | For ingestion | Server-only Supabase service role key |
+| `CRON_SECRET` | For ingestion | Shared secret for `/api/ingest/*` and Vercel Cron |
 
 \* Set **one** of anon or publishable key (not both required).
 
@@ -55,15 +57,22 @@ You can use **either** dashboard defaults **or** `vercel.json` — both are alig
 | Variable | Why |
 |----------|-----|
 | `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Exposes secret to browser; build fails if detected |
-| `SUPABASE_SERVICE_ROLE_KEY` | Not used by app today |
 | `ADMIN_EMAILS` | Not referenced in `src/` |
-| `CRON_SECRET` | Not referenced in `src/` |
 
 **Optional:**
 
 | Variable | Purpose |
 |----------|---------|
 | `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | `true` → enables `/debug/supabase` in production |
+| `GNEWS_API_KEY` | Optional curated news API ingestion |
+| `NEWS_API_KEY` | Optional NewsAPI ingestion |
+| `GUARDIAN_API_KEY` | Optional Guardian Open Platform ingestion |
+| `EVENTBRITE_API_KEY` | Optional Eventbrite event ingestion |
+| `GRANTS_GOV_ENABLED` | Optional Grants.gov opportunity ingestion |
+| `KINPRESS_NEWS_RSS_FEEDS` | Optional approved RSS override |
+| `KINPRESS_RESOURCE_FEED_URLS` | Optional verified resource JSON feeds |
+| `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional verified opportunity JSON feeds |
+| `KINPRESS_EVENT_FEED_URLS` | Optional verified event JSON feeds |
 
 On Vercel (`VERCEL=1`), `next.config.ts` runs env validation at build time — missing/invalid vars **fail the build** with a clear message instead of a runtime `MIDDLEWARE_INVOCATION_FAILED` 500.
 
@@ -179,8 +188,8 @@ Local repo has the corrected `@supabase/ssr` middleware. **Push to `main` and re
 
 ## Pre-deploy (Supabase)
 
-- [ ] Migrations 001 → 002 → audit fix → 003 applied
-- [ ] Seed or real articles published
+- [ ] Migrations 001 → 002_editorial_fields → kinpress_production_audit_fix → 003 → 004 → 005 applied
+- [ ] Real articles ingested/published; optional verified starter resources seeded
 - [ ] Auth Site URL + redirect URLs (above)
 - [ ] At least one `profiles.role = 'admin'`
 - [ ] Storage bucket `article-covers` exists

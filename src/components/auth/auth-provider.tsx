@@ -62,7 +62,7 @@ export function AuthProvider({
   const configured = isSupabaseConfigured();
   const [user, setUser] = useState<ClientAuthUser | null>(initialUser);
   const [profile, setProfile] = useState<AuthProfile | null>(initialProfile);
-  const [isLoading, setIsLoading] = useState(() => configured && !initialUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   const syncProfile = useCallback(async (nextUser: ClientAuthUser | null) => {
     if (!nextUser) {

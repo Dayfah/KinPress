@@ -35,7 +35,8 @@ const ARTICLE_SELECT = `
   region,
   topic,
   article_kind,
-  is_premium
+  is_premium,
+  is_verified
 `;
 
 function topicLabels(topics: ArticleTopic[]) {
@@ -44,11 +45,13 @@ function topicLabels(topics: ArticleTopic[]) {
     culture: "Culture",
     history: "History",
     business: "Business",
+    tech: "Tech",
     arts: "Arts",
     justice: "Justice",
     education: "Education",
     health: "Health",
     community: "Community",
+    local: "Local",
     opinion: "Opinion",
   };
   return topics.map((topic) => labels[topic]);

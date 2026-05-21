@@ -177,7 +177,7 @@ Based on live probes + deployed commit `cea1013`:
 | Admin publish | Untested | Needs admin role + deploy with admin routes |
 | Mobile nav | Pass | Bottom nav in layout |
 | Dark / light mode | Pass | Theme toggle + script present |
-| Logo | Pass | `/kinpress-logo.svg` loads |
+| Logo | Pass | Theme-aware KinPress logo marks load from `/kinpress-logo-mark-dark.svg` and `/kinpress-logo-mark-light.svg` |
 | 404 | Pass | Custom `not-found.tsx` |
 | Loading / empty states | Partial | Empty homepage; article errors hard-fail |
 

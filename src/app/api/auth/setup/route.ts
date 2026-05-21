@@ -18,7 +18,22 @@ export async function POST() {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
-  await ensureUserProfile(supabase, user);
+  const profile = await ensureUserProfile(supabase, user);
+
+  if (!profile) {
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!existing) {
+      return NextResponse.json(
+        { ok: false, error: "profile_setup_failed" },
+        { status: 500 },
+      );
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

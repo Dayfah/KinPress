@@ -26,6 +26,7 @@ export type ArticleRow = {
   topic: string | null;
   article_kind: string | null;
   is_premium: boolean | null;
+  is_verified?: boolean | null;
   categories?: { name: string | null; slug: string | null } | { name: string | null; slug: string | null }[] | null;
 };
 
@@ -92,7 +93,8 @@ export function normalizeArticle(row: ArticleRow): EditorialArticle {
     topic: pickTopic(row.topic),
     kind,
     isPremium: Boolean(row.is_premium),
-    href: isExternal && row.source_url ? row.source_url : `/articles/${row.slug}`,
+    isVerified: Boolean(row.is_verified),
+    href: `/articles/${row.slug}`,
     isExternal,
   };
 }

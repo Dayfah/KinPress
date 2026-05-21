@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useAuth } from "@/components/auth/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { AUTH_UNAVAILABLE_MESSAGE } from "@/lib/auth/messages";
@@ -18,6 +19,7 @@ export function SignOutButton({
   label = "Sign out",
 }: SignOutButtonProps) {
   const router = useRouter();
+  const auth = useAuth();
   const [message, setMessage] = useState<string | null>(null);
   const configured = isSupabaseConfigured();
 
@@ -38,6 +40,7 @@ export function SignOutButton({
       return;
     }
 
+    await auth.refresh();
     router.replace("/");
     router.refresh();
   }

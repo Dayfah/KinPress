@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/sign-out-button";
 import { SupabaseConfigNotice } from "@/components/supabase-config-notice";
 import { SupabaseQueryError } from "@/components/supabase-query-error";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { formatSupabaseError } from "@/lib/supabase/errors";
 import { requireAuthenticatedUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -121,6 +122,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       <div className="kp-page-container max-w-4xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-3">
+            <ThemeAwareLogo className="mb-2" showWordmark={false} size="sm" />
             <p className="kp-eyebrow">Account</p>
             <h1 className="kp-heading font-semibold tracking-editorial text-foreground">
               Your profile
@@ -134,7 +136,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </div>
 
         {params?.saved ? (
-          <p className="mb-6 rounded-md border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm font-medium text-secondary">
+          <p className="mb-6 rounded-md border border-deep-green/30 bg-deep-green/10 px-4 py-3 text-sm font-semibold text-deep-green">
             Profile updated.
           </p>
         ) : null}

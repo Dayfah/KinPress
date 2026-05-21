@@ -8,12 +8,17 @@ export type ReaderNavItem = {
 /** Main editorial sections (desktop header + mobile drawer). */
 export const primaryNavLinks: ReaderNavItem[] = [
   { label: "Home", href: "/" },
+  { label: "For You", href: "/for-you" },
   { label: "Culture", href: "/topic/culture" },
   { label: "Politics", href: "/topic/politics" },
   { label: "Business", href: "/topic/business" },
+  { label: "Health", href: "/topic/health" },
+  { label: "Tech", href: "/topic/tech" },
   { label: "History", href: "/topic/history" },
-  { label: "Arts", href: "/topic/arts" },
   { label: "Opinion", href: "/topic/opinion" },
+  { label: "Resources", href: "/resources" },
+  { label: "Opportunities", href: "/opportunities" },
+  { label: "Events", href: "/events" },
   { label: "Saved", href: "/saved" },
   { label: "Profile", href: "/profile" },
 ];
@@ -40,11 +45,13 @@ export const TOPIC_LABELS: Record<ArticleTopic, string> = {
   culture: "Culture",
   history: "History",
   business: "Business",
+  tech: "Tech",
   arts: "Arts",
   justice: "Justice",
   education: "Education",
   health: "Health",
   community: "Community",
+  local: "Local",
   opinion: "Opinion",
 };
 

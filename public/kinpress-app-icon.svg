@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none" role="img" aria-label="KinPress">
+  <rect width="180" height="180" rx="42" fill="#f5f0e8"/>
+  <rect x="34" y="34" width="112" height="112" rx="28" fill="#111111" fill-opacity="0.12"/>
+  <path
+    d="M62 54h28.6c18.48 0 30.8 10.56 30.8 26.84 0 11-5.28 18.92-14.08 22.88L128 142h-20.24L88.4 109.44h-7.92V142H62V54zm18.48 15.84V89.2h9.24c9.24 0 14.08-4.4 14.08-11.88 0-7.04-4.84-11.88-14.08-11.88h-9.24z"
+    fill="#111111"
+  />
+</svg>

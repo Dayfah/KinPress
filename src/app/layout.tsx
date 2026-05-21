@@ -13,6 +13,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: KINPRESS_TITLE,
   description: KINPRESS_DESCRIPTION,
+  manifest: "/site.webmanifest",
   openGraph: {
     title: KINPRESS_TITLE,
     description: KINPRESS_DESCRIPTION,
@@ -20,8 +21,20 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/kinpress-logo.svg",
-    apple: "/kinpress-logo.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      {
+        url: "/kinpress-logo-mark-dark.svg",
+        media: "(prefers-color-scheme: light)",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/kinpress-logo-mark-light.svg",
+        media: "(prefers-color-scheme: dark)",
+        type: "image/svg+xml",
+      },
+    ],
+    apple: "/kinpress-app-icon.svg",
   },
 };
 
@@ -43,16 +56,24 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preload" href="/kinpress-logo-mark-dark.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="/kinpress-logo-mark-light.svg" as="image" type="image/svg+xml" />
         <ThemeScript />
       </head>
-      <body className="min-h-screen bg-bone text-ink antialiased">
+      <body className="min-h-screen bg-bone text-ink antialiased kp-theme-transition">
         <ThemeProvider>
           <AuthShell
             initialProfile={initialAuth.profile}
             initialUser={initialAuth.user}
           >
+            <a className="kp-skip-link" href="#main-content">
+              Skip to content
+            </a>
             <SiteHeader />
-            <div className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
+            <div
+              className="min-w-0 pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0"
+              id="main-content"
+            >
               {children}
             </div>
             <div className="hidden md:block">

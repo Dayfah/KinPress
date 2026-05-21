@@ -1,18 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { sanitizeRedirectPath } from "@/lib/auth/routes";
 import { ensureUserProfile } from "@/lib/auth/profile";
-import { getAuthSiteOrigin, getPublicSupabaseEnv } from "@/lib/supabase/env";
+import { getPublicSupabaseEnv } from "@/lib/supabase/env";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const tokenHash = requestUrl.searchParams.get("token_hash");
+  const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
   const next = sanitizeRedirectPath(requestUrl.searchParams.get("next"), "/profile");
-  const origin = getAuthSiteOrigin();
+  const origin = requestUrl.origin;
 
-  if (!code) {
+  if (!code && !(tokenHash && type)) {
     return NextResponse.redirect(`${origin}/login?error=auth_callback`);
   }
 
@@ -37,7 +40,10 @@ export async function GET(request: Request) {
     },
   });
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } =
+    tokenHash && type
+      ? await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+      : await supabase.auth.exchangeCodeForSession(code!);
 
   if (error) {
     console.error("[KinPress] auth callback exchange failed", error.message);
