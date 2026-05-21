@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from "react";
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/sign-out-button";
+import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "@/lib/utils";
 
 type HeaderAuthActionsProps = {
@@ -22,7 +23,9 @@ export function HeaderAuthActions({
   variant = "header",
   wrapLink = (child) => child,
 }: HeaderAuthActionsProps) {
+  const auth = useAuth();
   const isDrawer = variant === "drawer";
+  const effectiveLoggedIn = auth.configured ? auth.isLoggedIn : isLoggedIn;
 
   const ghost = cn(
     isDrawer
@@ -43,7 +46,7 @@ export function HeaderAuthActions({
     linkClassName,
   );
 
-  if (!isLoggedIn) {
+  if (!effectiveLoggedIn) {
     return (
       <div
         className={cn(

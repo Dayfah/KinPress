@@ -26,12 +26,13 @@ function withSupabaseCookies(
 
 function redirectToLogin(
   request: NextRequest,
-  pathname: string,
   supabaseResponse: NextResponse,
 ) {
   const url = request.nextUrl.clone();
+  const next = `${request.nextUrl.pathname}${request.nextUrl.search}`;
   url.pathname = "/login";
-  url.searchParams.set("next", pathname);
+  url.search = "";
+  url.searchParams.set("next", next);
   return withSupabaseCookies(NextResponse.redirect(url), supabaseResponse);
 }
 
@@ -86,7 +87,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (!isLoggedIn && (isAuthProtectedPath(pathname) || isAdminPath(pathname))) {
-      return redirectToLogin(request, pathname, supabaseResponse);
+      return redirectToLogin(request, supabaseResponse);
     }
 
     return supabaseResponse;

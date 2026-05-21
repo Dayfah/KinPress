@@ -9,6 +9,10 @@ type SaveArticleButtonProps = {
   articlePath: string;
 };
 
+function redirectWithSaveError(articlePath: string, message: string) {
+  redirect(`${articlePath}?save_error=${encodeURIComponent(message)}`);
+}
+
 async function toggleSavedArticle(formData: FormData) {
   "use server";
 
@@ -16,7 +20,7 @@ async function toggleSavedArticle(formData: FormData) {
   const articlePath = formData.get("articlePath")?.toString() ?? "/";
 
   if (!articleId) {
-    throw new Error("Article id is required.");
+    redirectWithSaveError(articlePath, "Article id is missing.");
   }
 
   const supabase = await createClient();
@@ -41,7 +45,7 @@ async function toggleSavedArticle(formData: FormData) {
     .maybeSingle();
 
   if (savedArticleError && savedArticleError.code !== "PGRST116") {
-    throw new Error(`Unable to check saved article: ${savedArticleError.message}`);
+    redirectWithSaveError(articlePath, `Unable to check saved article: ${savedArticleError.message}`);
   }
 
   if (savedArticle) {
@@ -52,16 +56,27 @@ async function toggleSavedArticle(formData: FormData) {
       .eq("article_id", articleId);
 
     if (error) {
-      throw new Error(`Unable to unsave article: ${error.message}`);
+      redirectWithSaveError(articlePath, `Unable to unsave article: ${error.message}`);
     }
   } else {
+    const { data: article, error: articleError } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("id", articleId)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (articleError || !article) {
+      redirectWithSaveError(articlePath, "This story is not available to save.");
+    }
+
     const { error } = await supabase.from("saved_articles").insert({
       user_id: user.id,
       article_id: articleId,
     });
 
     if (error) {
-      throw new Error(`Unable to save article: ${error.message}`);
+      redirectWithSaveError(articlePath, `Unable to save article: ${error.message}`);
     }
   }
 

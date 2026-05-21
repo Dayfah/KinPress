@@ -29,6 +29,18 @@ export function mapSupabaseAuthError(message: string): string {
     return AUTH_ERROR_MAP.email_not_confirmed;
   }
 
+  if (normalized.includes("rate limit") || normalized.includes("too many")) {
+    return "Too many attempts. Please wait a few minutes before trying again.";
+  }
+
+  if (normalized.includes("signup disabled")) {
+    return "Account creation is temporarily disabled. Please contact KinPress support.";
+  }
+
+  if (normalized.includes("invalid email")) {
+    return "Enter a valid email address.";
+  }
+
   if (normalized.includes("user already registered")) {
     return "An account with this email already exists. Try logging in instead.";
   }

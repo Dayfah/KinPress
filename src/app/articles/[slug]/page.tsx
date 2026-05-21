@@ -26,6 +26,9 @@ type ArticlePageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    save_error?: string;
+  }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -113,8 +116,9 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
   redirect(`/articles/${slug}`);
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage({ params, searchParams }: ArticlePageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -234,6 +238,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               articlePath={`/articles/${article.slug}`}
             />
           </div>
+          {query?.save_error ? (
+            <p className="rounded-xl border border-heritage/25 bg-heritage/10 px-4 py-3 text-sm font-semibold text-heritage">
+              {query.save_error}
+            </p>
+          ) : null}
         </header>
 
         <ArticleBody body={article.body} />

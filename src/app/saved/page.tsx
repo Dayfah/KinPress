@@ -25,7 +25,7 @@ export default async function SavedArticlesPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?next=/saved");
   }
 
   const articles = await getSavedEditorialArticles(user.id);

@@ -36,21 +36,35 @@ export async function ensureUserProfile(
   if (!existing) {
     const { data: created, error } = await supabase
       .from("profiles")
-      .insert({
+      .upsert({
         id: user.id,
         display_name: displayName,
         role: "reader",
+      }, {
+        ignoreDuplicates: true,
+        onConflict: "id",
       })
       .select("id, display_name, role")
       .maybeSingle<ProfileRow>();
 
     if (error && error.code !== "23505") {
-      console.error("[KinPress] ensureUserProfile insert failed", error.message);
+      console.error("[KinPress] ensureUserProfile upsert failed", error.message);
     }
 
     if (created) {
       await ensureAuthorRow(supabase, user.id, displayName);
       return created;
+    }
+
+    const { data: refetched } = await supabase
+      .from("profiles")
+      .select("id, display_name, role")
+      .eq("id", user.id)
+      .maybeSingle<ProfileRow>();
+
+    if (refetched) {
+      await ensureAuthorRow(supabase, user.id, refetched.display_name?.trim() || displayName);
+      return refetched;
     }
   }
 

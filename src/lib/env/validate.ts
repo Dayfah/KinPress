@@ -80,7 +80,12 @@ export function validateSupabaseProjectUrl(raw: string | undefined): EnvIssue | 
     };
   }
 
-  if (parsed.protocol !== "https:") {
+  const isLocalSupabaseHost =
+    parsed.hostname === "localhost" ||
+    parsed.hostname === "127.0.0.1" ||
+    parsed.hostname === "::1";
+
+  if (parsed.protocol !== "https:" && !isLocalSupabaseHost) {
     return {
       code: "SUPABASE_URL_NOT_HTTPS",
       message: "NEXT_PUBLIC_SUPABASE_URL must use https:// in production.",
@@ -88,7 +93,7 @@ export function validateSupabaseProjectUrl(raw: string | undefined): EnvIssue | 
     };
   }
 
-  if (!parsed.hostname.endsWith(".supabase.co")) {
+  if (!isLocalSupabaseHost && !parsed.hostname.endsWith(".supabase.co")) {
     return {
       code: "SUPABASE_URL_HOST",
       message: "NEXT_PUBLIC_SUPABASE_URL hostname should end with .supabase.co.",
