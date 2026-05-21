@@ -22,7 +22,10 @@ const STORAGE_KEY = "kinpress-theme";
 const THEME_CHANGE_EVENT = "kinpress-theme-change";
 
 function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
 }
 
 function readTheme(): Theme {

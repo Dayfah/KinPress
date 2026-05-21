@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import { ARTICLE_TOPICS } from "@/lib/editorial/types";
 import { TOPIC_LABELS } from "@/lib/masthead-nav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,6 +26,7 @@ export default async function SectionsPage() {
     <main className="kp-home min-h-screen min-w-0 overflow-x-hidden">
       <section className="kp-shell max-w-5xl space-y-10 py-10">
         <header className="min-w-0 border-b border-ink/15 pb-6">
+          <ThemeAwareLogo className="mb-5" showWordmark={false} size="sm" />
           <p className="kp-eyebrow">Sections</p>
           <h1 className="mt-2 font-serif text-4xl font-bold text-ink">Browse by topic</h1>
           <p className="mt-3 text-sm leading-7 text-ink/70">

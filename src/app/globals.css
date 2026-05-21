@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --ink-black: #111111;
@@ -91,7 +92,15 @@
 html {
   background: var(--bone-white);
   color: var(--ink-black);
+  color-scheme: light;
   overflow-x: hidden;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -105,6 +114,9 @@ body {
   color: var(--ink-black);
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.45;
+  transition:
+    background 220ms ease,
+    color 220ms ease;
 }
 
 .dark body {
@@ -124,6 +136,135 @@ video,
 svg {
   max-width: 100%;
   height: auto;
+}
+
+.kp-logo {
+  --kp-logo-size: 2.5rem;
+  --kp-logo-gap: 0.625rem;
+  --kp-logo-wordmark-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kp-logo-gap);
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ink-black);
+  transition:
+    color 220ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.kp-logo:hover {
+  opacity: 0.9;
+}
+
+.kp-logo--sm {
+  --kp-logo-size: 2rem;
+  --kp-logo-gap: 0.5rem;
+  --kp-logo-wordmark-size: 1.125rem;
+}
+
+.kp-logo--md {
+  --kp-logo-size: 2.5rem;
+  --kp-logo-wordmark-size: 1.5rem;
+}
+
+.kp-logo--lg {
+  --kp-logo-size: 3rem;
+  --kp-logo-gap: 0.75rem;
+  --kp-logo-wordmark-size: 1.875rem;
+}
+
+.kp-logo--splash {
+  --kp-logo-size: clamp(4.25rem, 18vw, 6.75rem);
+  --kp-logo-gap: 1rem;
+  --kp-logo-wordmark-size: clamp(2.25rem, 10vw, 4.25rem);
+}
+
+.kp-logo--on-dark {
+  color: #f5f0e8;
+}
+
+.kp-logo--on-light {
+  color: #111111;
+}
+
+.kp-logo-mark {
+  position: relative;
+  display: block;
+  width: var(--kp-logo-size);
+  height: var(--kp-logo-size);
+  flex: 0 0 var(--kp-logo-size);
+}
+
+.kp-logo-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.kp-logo-image--dark {
+  opacity: 1;
+}
+
+.kp-logo-image--light {
+  opacity: 0;
+}
+
+.dark .kp-logo--theme .kp-logo-image--dark,
+.kp-logo--on-dark .kp-logo-image--dark {
+  opacity: 0;
+}
+
+.dark .kp-logo--theme .kp-logo-image--light,
+.kp-logo--on-dark .kp-logo-image--light {
+  opacity: 1;
+}
+
+.kp-logo--on-light .kp-logo-image--dark {
+  opacity: 1;
+}
+
+.kp-logo--on-light .kp-logo-image--light {
+  opacity: 0;
+}
+
+.kp-logo-wordmark {
+  min-width: 0;
+  color: inherit;
+  font-family: var(--font-serif);
+  font-size: var(--kp-logo-wordmark-size);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.kp-theme-transition,
+.kp-theme-transition * {
+  transition-duration: 220ms;
+  transition-property: background-color, border-color, box-shadow, color, opacity, transform;
+  transition-timing-function: ease;
+}
+
+.kp-page-state {
+  animation: kp-page-state-in 220ms ease both;
+}
+
+@keyframes kp-page-state-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .kp-section-tight {
@@ -404,6 +545,28 @@ svg {
   color: var(--heritage-red);
 }
 
+.kp-theme-toggle-icon {
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.kp-theme-toggle-icon--sun {
+  position: absolute;
+  opacity: 0;
+  transform: rotate(-30deg) scale(0.75);
+}
+
+.dark .kp-theme-toggle-icon--moon {
+  opacity: 0;
+  transform: rotate(30deg) scale(0.75);
+}
+
+.dark .kp-theme-toggle-icon--sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
 .kp-surface {
   border: 1px solid hsl(var(--border));
   background: hsl(var(--card));
@@ -491,6 +654,12 @@ svg {
   border: 1px solid hsl(var(--border));
   background: hsl(var(--card));
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ink-black) 4%, transparent);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    color 220ms ease,
+    transform 180ms ease;
 }
 
 .dark .kp-home-card {
@@ -507,4 +676,15 @@ input.kp-input:focus {
   outline: none;
   border-color: var(--heritage-red);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-accent) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

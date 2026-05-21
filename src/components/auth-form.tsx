@@ -30,7 +30,7 @@ export function AuthForm({ mode, initialError = null, redirectTo }: AuthFormProp
 
   const authHeader = (
     <>
-      <KinPressLogo className="mb-6 dark:[&_img]:brightness-0 dark:[&_img]:invert" />
+      <KinPressLogo className="mb-6" priority />
       <p className="kp-eyebrow">{isSignup ? "Create account" : "Welcome back"}</p>
       <h1 className="mt-3 font-serif text-3xl font-semibold tracking-editorial text-foreground sm:text-4xl">
         {isSignup ? "Join KinPress" : "Log in to KinPress"}

@@ -73,7 +73,7 @@ function HeaderTopRow({
 }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-3">
-      <KinPressLogo className="min-w-0 shrink dark:[&_img]:brightness-0 dark:[&_img]:invert" />
+      <KinPressLogo className="min-w-0 shrink" priority />
       <p className="hidden min-w-0 truncate text-[11px] font-black uppercase tracking-[0.2em] text-muted-brown lg:block">
         {KINPRESS_TAGLINE_SHORT}
       </p>

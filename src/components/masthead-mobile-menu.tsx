@@ -46,7 +46,7 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
         <SheetTitle className="sr-only">KinPress navigation</SheetTitle>
 
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
-          <KinPressLogo className="text-white [&_span]:text-white" showWordmark />
+          <KinPressLogo showWordmark tone="onDark" />
           <SheetClose asChild>
             <button
               aria-label="Close menu"
@@ -89,7 +89,7 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
         </nav>
 
         <footer className="shrink-0 border-t border-white/10 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-          <div>
+          <div className="flex items-center justify-between gap-3">
             <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white/45">
               Account
             </span>

@@ -1,0 +1,23 @@
+{
+  "name": "KinPress",
+  "short_name": "KinPress",
+  "description": "The Black Community",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/kinpress-app-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/kinpress-logo-mark-dark.svg",
+      "sizes": "40x40",
+      "type": "image/svg+xml",
+      "purpose": "any monochrome"
+    }
+  ]
+}

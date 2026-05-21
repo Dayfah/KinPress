@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
 import { EditorialArticleCard } from "@/components/editorial/editorial-article-card";
+import { ThemeAwareLogo } from "@/components/kinpress-logo";
 import SaveArticleButton from "@/components/save-article-button";
 import {
   CommentSection,
@@ -162,6 +163,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         ) : null}
 
         <header className="space-y-6 border-b border-ink/15 pb-10">
+          <ThemeAwareLogo
+            className="opacity-85"
+            showWordmark={false}
+            size="sm"
+          />
           <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-muted-brown">
             <span className="text-heritage">{article.category}</span>
             <span className="text-ink/40" aria-hidden>
