@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { fetchGuardianItems, fetchNewsApiItems } from "@/lib/ingest/adapters";
 import { fetchRssItems, type RssItem } from "@/lib/ingest/rss";
 import { slugifyTitle } from "@/lib/editorial/normalize";
 import type { ArticleTopic } from "@/lib/editorial/types";
@@ -75,6 +76,52 @@ function curatedBody(item: RssItem) {
   ].join("\n\n");
 }
 
+async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
+  const topic = categorize(item);
+  const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
+  const payload = {
+    title: item.title,
+    slug,
+    excerpt: item.description || `Source summary unavailable. Read the full story at ${item.sourceName}.`,
+    summary: item.description || `Source summary unavailable. Read the full story at ${item.sourceName}.`,
+    body: curatedBody(item),
+    category_name: categoryLabel(topic),
+    tags: [topic, "curated", "black-news", "verified-source"],
+    author_name: item.sourceName,
+    source_name: item.sourceName,
+    source_url: item.link,
+    cover_image_url: item.imageUrl,
+    image_url: item.imageUrl,
+    status: "published",
+    published_at: item.publishedAt
+      ? new Date(item.publishedAt).toISOString()
+      : null,
+    is_featured: false,
+    editor_pick: false,
+    reading_time: 2,
+    region: "national",
+    topic,
+    article_kind: "curated_external",
+    is_premium: false,
+    is_verified: true,
+  };
+  const { data: existing, error: lookupError } = await supabase
+    .from("articles")
+    .select("id")
+    .eq("source_url", item.link)
+    .maybeSingle<{ id: string }>();
+
+  if (lookupError) {
+    return lookupError;
+  }
+
+  const { error } = existing
+    ? await supabase.from("articles").update(payload).eq("id", existing.id)
+    : await supabase.from("articles").insert(payload);
+
+  return error;
+}
+
 async function fetchGNewsItems(): Promise<RssItem[]> {
   const apiKey = process.env.GNEWS_API_KEY?.trim();
 
@@ -126,42 +173,7 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items.slice(0, 20)) {
-        const topic = categorize(item);
-        const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
-        const payload = {
-            title: item.title,
-            slug,
-            excerpt: item.description || `Read the full story at ${item.sourceName}.`,
-            summary: item.description || `Read the full story at ${item.sourceName}.`,
-            body: curatedBody(item),
-            category_name: categoryLabel(topic),
-            tags: [topic, "curated", "black-news"],
-            author_name: item.sourceName,
-            source_name: item.sourceName,
-            source_url: item.link,
-            cover_image_url: item.imageUrl,
-            image_url: item.imageUrl,
-            status: "published",
-            published_at: item.publishedAt ? new Date(item.publishedAt).toISOString() : new Date().toISOString(),
-            is_featured: false,
-            editor_pick: false,
-            reading_time: 2,
-            region: "national",
-            topic,
-            article_kind: "curated_external",
-            is_premium: false,
-          };
-        const { data: existing, error: lookupError } = await supabase
-          .from("articles")
-          .select("id")
-          .eq("source_url", item.link)
-          .maybeSingle<{ id: string }>();
-
-        const { error } = lookupError
-          ? { error: lookupError }
-          : existing
-            ? await supabase.from("articles").update(payload).eq("id", existing.id)
-            : await supabase.from("articles").insert(payload);
+        const error = await upsertNewsItem(supabase, item);
 
         if (error) {
           errors.push(`${item.link}: ${error.message}`);
@@ -179,43 +191,7 @@ export async function ingestNews(supabase: SupabaseClient) {
     itemsSeen += gnewsItems.length;
 
     for (const item of gnewsItems) {
-      const topic = categorize(item);
-      const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
-      const payload = {
-        title: item.title,
-        slug,
-        excerpt: item.description || `Read the full story at ${item.sourceName}.`,
-        summary: item.description || `Read the full story at ${item.sourceName}.`,
-        body: curatedBody(item),
-        category_name: categoryLabel(topic),
-        tags: [topic, "curated", "black-news"],
-        author_name: item.sourceName,
-        source_name: item.sourceName,
-        source_url: item.link,
-        cover_image_url: item.imageUrl,
-        image_url: item.imageUrl,
-        status: "published",
-        published_at: item.publishedAt
-          ? new Date(item.publishedAt).toISOString()
-          : new Date().toISOString(),
-        is_featured: false,
-        editor_pick: false,
-        reading_time: 2,
-        region: "national",
-        topic,
-        article_kind: "curated_external",
-        is_premium: false,
-      };
-      const { data: existing, error: lookupError } = await supabase
-        .from("articles")
-        .select("id")
-        .eq("source_url", item.link)
-        .maybeSingle<{ id: string }>();
-      const { error } = lookupError
-        ? { error: lookupError }
-        : existing
-          ? await supabase.from("articles").update(payload).eq("id", existing.id)
-          : await supabase.from("articles").insert(payload);
+      const error = await upsertNewsItem(supabase, item);
 
       if (error) {
         errors.push(`${item.link}: ${error.message}`);
@@ -225,6 +201,28 @@ export async function ingestNews(supabase: SupabaseClient) {
     }
   } catch (error) {
     errors.push(error instanceof Error ? error.message : "Unknown GNews failure");
+  }
+
+  for (const [label, load] of [
+    ["NewsAPI", fetchNewsApiItems],
+    ["Guardian", fetchGuardianItems],
+  ] as const) {
+    try {
+      const items = await load();
+      itemsSeen += items.length;
+
+      for (const item of items) {
+        const error = await upsertNewsItem(supabase, item);
+
+        if (error) {
+          errors.push(`${item.link}: ${error.message}`);
+        } else {
+          itemsUpserted += 1;
+        }
+      }
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : `Unknown ${label} failure`);
+    }
   }
 
   return { itemsSeen, itemsUpserted, errors };

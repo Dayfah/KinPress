@@ -27,7 +27,8 @@ const SAVED_SELECT = `
     region,
     topic,
     article_kind,
-    is_premium
+    is_premium,
+    is_verified
   )
 `;
 

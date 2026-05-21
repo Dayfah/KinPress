@@ -48,6 +48,10 @@ Set server-only env vars in Vercel before enabling ingestion:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `CRON_SECRET`
 - Optional: `GNEWS_API_KEY`
+- Optional: `NEWS_API_KEY`
+- Optional: `GUARDIAN_API_KEY`
+- Optional: `EVENTBRITE_API_KEY`
+- Optional: `GRANTS_GOV_ENABLED=true`
 - Optional: `KINPRESS_NEWS_RSS_FEEDS`
 - Optional: `KINPRESS_RESOURCE_FEED_URLS`
 - Optional: `KINPRESS_OPPORTUNITY_FEED_URLS`
@@ -59,6 +63,10 @@ Run ingestion manually:
 curl -X POST https://kin-press.vercel.app/api/ingest/news \
   -H "Authorization: Bearer <CRON_SECRET>"
 ```
+
+If API keys are missing, run `supabase/seed_editorial.sql` for verified,
+source-attributed starter resources, opportunities, and events. It does not seed
+fake articles, fake authors, or fake dates.
 
 ## 5. Storage
 

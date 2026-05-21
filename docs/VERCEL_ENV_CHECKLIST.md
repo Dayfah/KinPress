@@ -20,6 +20,10 @@ Copy keys from **Supabase → Project Settings → API** (anon or publishable �
 | `SUPABASE_SERVICE_ROLE_KEY` | Required only for `/api/ingest/*`; server-side only, no `NEXT_PUBLIC_` prefix |
 | `CRON_SECRET` | Required to authorize `/api/ingest/*` and Vercel Cron calls |
 | `GNEWS_API_KEY` | Optional GNews integration for curated news ingestion |
+| `NEWS_API_KEY` | Optional NewsAPI integration for curated news ingestion |
+| `GUARDIAN_API_KEY` | Optional Guardian Open Platform integration |
+| `EVENTBRITE_API_KEY` | Optional Eventbrite event ingestion |
+| `GRANTS_GOV_ENABLED` | Set `true` to enable Grants.gov opportunity ingestion |
 | `KINPRESS_NEWS_RSS_FEEDS` | Optional comma-separated RSS feeds; defaults exist |
 | `KINPRESS_RESOURCE_FEED_URLS` | Optional comma-separated JSON feed URLs |
 | `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional comma-separated JSON feed URLs |

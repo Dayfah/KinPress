@@ -123,7 +123,7 @@ export const getEvents = cache(async function getEvents(
     .select(EVENT_COLUMNS)
     .eq("status", "published")
     .eq("is_verified", true)
-    .gte("starts_at", new Date().toISOString())
+    .or(`starts_at.is.null,starts_at.gte.${new Date().toISOString()}`)
     .order("starts_at", { ascending: true, nullsFirst: false })
     .limit(limit)
     .returns<CommunityEvent[]>();

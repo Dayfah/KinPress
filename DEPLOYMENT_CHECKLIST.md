@@ -65,6 +65,10 @@ You can use **either** dashboard defaults **or** `vercel.json` — both are alig
 |----------|---------|
 | `NEXT_PUBLIC_ENABLE_SUPABASE_DEBUG` | `true` → enables `/debug/supabase` in production |
 | `GNEWS_API_KEY` | Optional curated news API ingestion |
+| `NEWS_API_KEY` | Optional NewsAPI ingestion |
+| `GUARDIAN_API_KEY` | Optional Guardian Open Platform ingestion |
+| `EVENTBRITE_API_KEY` | Optional Eventbrite event ingestion |
+| `GRANTS_GOV_ENABLED` | Optional Grants.gov opportunity ingestion |
 | `KINPRESS_NEWS_RSS_FEEDS` | Optional approved RSS override |
 | `KINPRESS_RESOURCE_FEED_URLS` | Optional verified resource JSON feeds |
 | `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional verified opportunity JSON feeds |

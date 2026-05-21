@@ -87,6 +87,16 @@ create table if not exists public.ingestion_runs (
   created_at timestamptz not null default now()
 );
 
+alter table public.articles
+  add column if not exists is_verified boolean not null default false;
+
+create unique index if not exists articles_source_url_unique_idx
+  on public.articles (source_url)
+  where source_url is not null;
+
+create index if not exists articles_verified_status_idx
+  on public.articles (status, is_verified, published_at desc nulls last);
+
 update public.articles a
 set category_id = c.id
 from public.categories c

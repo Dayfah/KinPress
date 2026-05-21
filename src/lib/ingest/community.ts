@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  fetchEventbriteEvents,
+  fetchGrantsGovOpportunities,
+} from "@/lib/ingest/adapters";
 import { cleanText, normalizeUrl } from "@/lib/ingest/text";
 
 type CommunityKind = "resources" | "opportunities" | "events";
@@ -157,11 +161,7 @@ export async function ingestCommunityFeed(
   let itemsUpserted = 0;
 
   if (feeds.length === 0) {
-    return {
-      itemsSeen,
-      itemsUpserted,
-      errors: [`${envName} is not configured.`],
-    };
+    errors.push(`${envName} is not configured.`);
   }
 
   for (const feed of feeds) {
@@ -189,6 +189,31 @@ export async function ingestCommunityFeed(
     } catch (error) {
       errors.push(error instanceof Error ? error.message : `Unknown failure for ${feed}`);
     }
+  }
+
+  try {
+    const adapterRecords =
+      kind === "opportunities"
+        ? await fetchGrantsGovOpportunities()
+        : kind === "events"
+          ? await fetchEventbriteEvents()
+          : [];
+
+    itemsSeen += adapterRecords.length;
+
+    for (const record of adapterRecords) {
+      const { error } = await supabase
+        .from(kind)
+        .upsert(record as never, { onConflict: "source_url" });
+
+      if (error) {
+        errors.push(`${"source_url" in record ? record.source_url : kind}: ${error.message}`);
+      } else {
+        itemsUpserted += 1;
+      }
+    }
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : `Unknown ${kind} adapter failure`);
   }
 
   return { itemsSeen, itemsUpserted, errors };

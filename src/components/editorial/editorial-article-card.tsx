@@ -56,6 +56,12 @@ export function EditorialArticleCard({
         <div>
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-muted-brown sm:text-[11px]">
             <span className="text-heritage">{article.category}</span>
+            {article.isVerified ? (
+              <>
+                <span className="text-ink/40">·</span>
+                <span>Verified source</span>
+              </>
+            ) : null}
             <span className="text-ink/40">·</span>
             <span>{article.readingTime} min read</span>
             {date ? (

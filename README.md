@@ -53,6 +53,10 @@ Reader-facing Supabase access uses browser-safe `NEXT_PUBLIC_*` keys only. Inges
 | `SUPABASE_SERVICE_ROLE_KEY` | Required for ingestion | Optional unless testing ingestion | No |
 | `CRON_SECRET` | Required for ingestion | Optional unless testing ingestion | No |
 | `GNEWS_API_KEY` | Optional | Optional | No |
+| `NEWS_API_KEY` | Optional | Optional | No |
+| `GUARDIAN_API_KEY` | Optional | Optional | No |
+| `EVENTBRITE_API_KEY` | Optional | Optional | No |
+| `GRANTS_GOV_ENABLED` | Optional | Optional | No |
 | `KINPRESS_NEWS_RSS_FEEDS` | Optional | Optional | No |
 | `KINPRESS_RESOURCE_FEED_URLS` | Optional | Optional | No |
 | `KINPRESS_OPPORTUNITY_FEED_URLS` | Optional | Optional | No |
@@ -127,7 +131,7 @@ Protected routes:
 - `POST /api/ingest/opportunities`
 - `POST /api/ingest/events`
 
-Call with `Authorization: Bearer <CRON_SECRET>`. News ingestion uses approved RSS feeds by default and `GNEWS_API_KEY` when present. Resource, opportunity, and event ingestion read configured JSON feeds and upsert only records with source URLs.
+Call with `Authorization: Bearer <CRON_SECRET>`. News ingestion uses approved RSS feeds by default and can also use `GNEWS_API_KEY`, `NEWS_API_KEY`, and `GUARDIAN_API_KEY`. Opportunities can also use Grants.gov when `GRANTS_GOV_ENABLED=true`; events can use Eventbrite when `EVENTBRITE_API_KEY` is set. Resource, opportunity, and event JSON feeds upsert only records with source URLs.
 
 ## Admin / editor
 

@@ -46,6 +46,7 @@ export type EditorialArticle = {
   topic: ArticleTopic;
   kind: ArticleKind;
   isPremium: boolean;
+  isVerified: boolean;
   href: string;
   isExternal: boolean;
 };
