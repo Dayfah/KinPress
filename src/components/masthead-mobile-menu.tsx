@@ -11,6 +11,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -44,6 +45,9 @@ export function MastheadMobileMenu({ isLoggedIn, showAdmin }: MastheadMobileMenu
         side="right"
       >
         <SheetTitle className="sr-only">KinPress navigation</SheetTitle>
+        <SheetDescription className="sr-only">
+          Browse KinPress sections, account links, and theme controls.
+        </SheetDescription>
 
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
           <KinPressLogo showWordmark tone="onDark" />
