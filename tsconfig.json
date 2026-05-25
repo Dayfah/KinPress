@@ -25,13 +25,15 @@
   "include": [
     "next-env.d.ts",
     "next.config.ts",
+    "src/middleware.ts",
     "src/app/**/*.ts",
     "src/app/**/*.tsx",
     "src/components/**/*.ts",
     "src/components/**/*.tsx",
     "src/lib/**/*.ts",
+    "src/hooks/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "kinpress"]
+  "exclude": ["node_modules"]
 }
