@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
@@ -82,6 +83,7 @@ export default async function RootLayout({
             <MobileBottomNav />
           </AuthShell>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
