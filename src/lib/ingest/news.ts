@@ -27,6 +27,17 @@ type GNewsArticle = {
   source?: { name?: string };
 };
 
+type ExistingArticle = {
+  id: string;
+  article_kind: string | null;
+  author_id: string | null;
+};
+
+type UpsertNewsResult = {
+  error: { message: string } | null;
+  upserted: boolean;
+};
+
 const topicKeywords: Array<{ topic: ArticleTopic; keywords: string[] }> = [
   { topic: "politics", keywords: ["election", "voter", "congress", "policy", "mayor"] },
   { topic: "business", keywords: ["business", "founder", "startup", "funding", "wealth"] },
@@ -107,12 +118,16 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   };
   const { data: existing, error: lookupError } = await supabase
     .from("articles")
-    .select("id, slug")
+    .select("id, article_kind, author_id")
     .eq("source_url", item.link)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<ExistingArticle>();
 
   if (lookupError) {
-    return lookupError;
+    return { error: lookupError, upserted: false } satisfies UpsertNewsResult;
+  }
+
+  if (existing && !isManagedIngestArticle(existing)) {
+    return { error: null, upserted: false } satisfies UpsertNewsResult;
   }
 
   const { slug: _newSlug, ...updatePayload } = payload;
@@ -120,7 +135,11 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
 
-  return error;
+  return { error, upserted: !error } satisfies UpsertNewsResult;
+}
+
+function isManagedIngestArticle(article: ExistingArticle) {
+  return article.article_kind === "curated_external" && article.author_id === null;
 }
 
 async function fetchGNewsItems(): Promise<RssItem[]> {
@@ -174,11 +193,11 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items.slice(0, 20)) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
-        } else {
+        if (result.error) {
+          errors.push(`${item.link}: ${result.error.message}`);
+        } else if (result.upserted) {
           itemsUpserted += 1;
         }
       }
@@ -192,11 +211,11 @@ export async function ingestNews(supabase: SupabaseClient) {
     itemsSeen += gnewsItems.length;
 
     for (const item of gnewsItems) {
-      const error = await upsertNewsItem(supabase, item);
+      const result = await upsertNewsItem(supabase, item);
 
-      if (error) {
-        errors.push(`${item.link}: ${error.message}`);
-      } else {
+      if (result.error) {
+        errors.push(`${item.link}: ${result.error.message}`);
+      } else if (result.upserted) {
         itemsUpserted += 1;
       }
     }
@@ -213,11 +232,11 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
-        } else {
+        if (result.error) {
+          errors.push(`${item.link}: ${result.error.message}`);
+        } else if (result.upserted) {
           itemsUpserted += 1;
         }
       }
