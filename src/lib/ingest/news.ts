@@ -79,6 +79,7 @@ function curatedBody(item: RssItem) {
 async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   const topic = categorize(item);
   const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
+  const publishedAt = item.publishedAt ? new Date(item.publishedAt).toISOString() : null;
   const payload = {
     title: item.title,
     slug,
@@ -93,9 +94,7 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     cover_image_url: item.imageUrl,
     image_url: item.imageUrl,
     status: "published",
-    published_at: item.publishedAt
-      ? new Date(item.publishedAt).toISOString()
-      : null,
+    published_at: publishedAt ?? new Date().toISOString(),
     is_featured: false,
     editor_pick: false,
     reading_time: 2,
@@ -115,7 +114,12 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     return lookupError;
   }
 
-  const { slug: _newSlug, ...updatePayload } = payload;
+  const { slug: _newSlug, ...baseUpdatePayload } = payload;
+  const updatePayload: Partial<typeof payload> = baseUpdatePayload;
+  if (!publishedAt) {
+    delete updatePayload.published_at;
+  }
+
   const { error } = existing
     ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
