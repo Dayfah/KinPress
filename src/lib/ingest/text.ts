@@ -27,6 +27,10 @@ export function normalizeUrl(value: unknown) {
 
   try {
     const url = new URL(value.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return null;
+    }
+
     url.hash = "";
     return url.toString();
   } catch {
