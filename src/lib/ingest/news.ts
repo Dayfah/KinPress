@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { fetchGuardianItems, fetchNewsApiItems } from "@/lib/ingest/adapters";
 import { fetchRssItems, type RssItem } from "@/lib/ingest/rss";
+import { cleanText, normalizeUrl, sourceNameFromUrl } from "@/lib/ingest/text";
 import { slugifyTitle } from "@/lib/editorial/normalize";
 import type { ArticleTopic } from "@/lib/editorial/types";
 
@@ -115,7 +116,12 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     return lookupError;
   }
 
-  const { slug: _newSlug, ...updatePayload } = payload;
+  const {
+    slug: _newSlug,
+    status: _newStatus,
+    is_verified: _newIsVerified,
+    ...updatePayload
+  } = payload;
   const { error } = existing
     ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
@@ -146,17 +152,22 @@ async function fetchGNewsItems(): Promise<RssItem[]> {
 
   return (payload.articles ?? [])
     .map((article) => {
-      if (!article.title || !article.url) {
+      const link = normalizeUrl(article.url);
+      const title = cleanText(article.title, 180);
+
+      if (!link || !title) {
         return null;
       }
 
       return {
-        title: article.title,
-        link: article.url,
-        description: article.description ?? "",
+        title,
+        link,
+        description: cleanText(article.description, 320),
         publishedAt: article.publishedAt ?? null,
-        imageUrl: article.image ?? null,
-        sourceName: article.source?.name ?? "GNews source",
+        imageUrl: normalizeUrl(article.image),
+        sourceName:
+          (typeof article.source?.name === "string" && cleanText(article.source.name, 80)) ||
+          sourceNameFromUrl(link),
       };
     })
     .filter((item): item is RssItem => Boolean(item));

@@ -126,6 +126,44 @@ function normalizeRecord(kind: CommunityKind, record: IncomingCommunityRecord) {
   };
 }
 
+async function upsertModeratedRecord(
+  supabase: SupabaseClient,
+  kind: CommunityKind,
+  payload: Record<string, unknown>,
+) {
+  const sourceUrl = typeof payload.source_url === "string" ? payload.source_url : "";
+
+  if (!sourceUrl) {
+    return new Error("Missing source_url");
+  }
+
+  const { data: existing, error: lookupError } = await supabase
+    .from(kind)
+    .select("id")
+    .eq("source_url", sourceUrl)
+    .maybeSingle<{ id: string }>();
+
+  if (lookupError) {
+    return lookupError;
+  }
+
+  if (!existing) {
+    const { error } = await supabase.from(kind).insert(payload as never);
+    return error;
+  }
+
+  const {
+    status: _newStatus,
+    is_verified: _newIsVerified,
+    ...updatePayload
+  } = payload;
+  const { error } = await supabase
+    .from(kind)
+    .update(updatePayload as never)
+    .eq("id", existing.id);
+  return error;
+}
+
 async function fetchJsonFeed(url: string) {
   const response = await fetch(url, {
     headers: {
@@ -172,9 +210,7 @@ export async function ingestCommunityFeed(
           continue;
         }
 
-        const { error } = await supabase
-          .from(kind)
-          .upsert(payload as never, { onConflict: "source_url" });
+        const error = await upsertModeratedRecord(supabase, kind, payload);
 
         if (error) {
           errors.push(`${payload.source_url}: ${error.message}`);
@@ -198,9 +234,11 @@ export async function ingestCommunityFeed(
     itemsSeen += adapterRecords.length;
 
     for (const record of adapterRecords) {
-      const { error } = await supabase
-        .from(kind)
-        .upsert(record as never, { onConflict: "source_url" });
+      const error = await upsertModeratedRecord(
+        supabase,
+        kind,
+        record as Record<string, unknown>,
+      );
 
       if (error) {
         errors.push(`${"source_url" in record ? record.source_url : kind}: ${error.message}`);
