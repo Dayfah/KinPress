@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchGuardianItems, fetchNewsApiItems } from "@/lib/ingest/adapters";
 import { fetchRssItems, type RssItem } from "@/lib/ingest/rss";
 import { slugifyTitle } from "@/lib/editorial/normalize";
+import { isIngestionManagedArticle } from "@/lib/ingest/managed-records";
 import type { ArticleTopic } from "@/lib/editorial/types";
 
 type NewsSource = {
@@ -26,6 +27,11 @@ type GNewsArticle = {
   publishedAt?: string;
   source?: { name?: string };
 };
+
+type IngestWriteResult =
+  | { status: "upserted" }
+  | { status: "skipped" }
+  | { status: "error"; message: string };
 
 const topicKeywords: Array<{ topic: ArticleTopic; keywords: string[] }> = [
   { topic: "politics", keywords: ["election", "voter", "congress", "policy", "mayor"] },
@@ -107,12 +113,21 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   };
   const { data: existing, error: lookupError } = await supabase
     .from("articles")
-    .select("id, slug")
+    .select("id, article_kind, author_id, status")
     .eq("source_url", item.link)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{
+      id: string;
+      article_kind: string | null;
+      author_id: string | null;
+      status: string | null;
+    }>();
 
   if (lookupError) {
-    return lookupError;
+    return { status: "error", message: lookupError.message } satisfies IngestWriteResult;
+  }
+
+  if (existing && !isIngestionManagedArticle(existing)) {
+    return { status: "skipped" } satisfies IngestWriteResult;
   }
 
   const { slug: _newSlug, ...updatePayload } = payload;
@@ -120,7 +135,11 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
 
-  return error;
+  if (error) {
+    return { status: "error", message: error.message } satisfies IngestWriteResult;
+  }
+
+  return { status: "upserted" } satisfies IngestWriteResult;
 }
 
 async function fetchGNewsItems(): Promise<RssItem[]> {
@@ -167,6 +186,7 @@ export async function ingestNews(supabase: SupabaseClient) {
   const errors: string[] = [];
   let itemsSeen = 0;
   let itemsUpserted = 0;
+  let itemsSkipped = 0;
 
   for (const source of sources) {
     try {
@@ -174,10 +194,12 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items.slice(0, 20)) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
+        if (result.status === "error") {
+          errors.push(`${item.link}: ${result.message}`);
+        } else if (result.status === "skipped") {
+          itemsSkipped += 1;
         } else {
           itemsUpserted += 1;
         }
@@ -192,10 +214,12 @@ export async function ingestNews(supabase: SupabaseClient) {
     itemsSeen += gnewsItems.length;
 
     for (const item of gnewsItems) {
-      const error = await upsertNewsItem(supabase, item);
+      const result = await upsertNewsItem(supabase, item);
 
-      if (error) {
-        errors.push(`${item.link}: ${error.message}`);
+      if (result.status === "error") {
+        errors.push(`${item.link}: ${result.message}`);
+      } else if (result.status === "skipped") {
+        itemsSkipped += 1;
       } else {
         itemsUpserted += 1;
       }
@@ -213,10 +237,12 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
+        if (result.status === "error") {
+          errors.push(`${item.link}: ${result.message}`);
+        } else if (result.status === "skipped") {
+          itemsSkipped += 1;
         } else {
           itemsUpserted += 1;
         }
@@ -226,5 +252,5 @@ export async function ingestNews(supabase: SupabaseClient) {
     }
   }
 
-  return { itemsSeen, itemsUpserted, errors };
+  return { itemsSeen, itemsUpserted, itemsSkipped, errors };
 }
