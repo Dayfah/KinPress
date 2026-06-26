@@ -39,6 +39,24 @@ const topicKeywords: Array<{ topic: ArticleTopic; keywords: string[] }> = [
   { topic: "opinion", keywords: ["opinion", "essay", "column"] },
 ];
 
+type ExistingNewsArticle = {
+  id: string;
+  article_kind: string | null;
+  author_id: string | null;
+};
+
+type UpsertNewsItemResult = {
+  error: { message: string } | null;
+  didWrite: boolean;
+};
+
+export function isAutomatedNewsArticle(article: {
+  article_kind: string | null;
+  author_id: string | null;
+}) {
+  return article.article_kind === "curated_external" && article.author_id === null;
+}
+
 function configuredRssSources() {
   const raw = process.env.KINPRESS_NEWS_RSS_FEEDS?.trim();
 
@@ -76,7 +94,10 @@ function curatedBody(item: RssItem) {
   ].join("\n\n");
 }
 
-async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
+async function upsertNewsItem(
+  supabase: SupabaseClient,
+  item: RssItem,
+): Promise<UpsertNewsItemResult> {
   const topic = categorize(item);
   const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
   const payload = {
@@ -107,12 +128,16 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   };
   const { data: existing, error: lookupError } = await supabase
     .from("articles")
-    .select("id, slug")
+    .select("id, article_kind, author_id")
     .eq("source_url", item.link)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<ExistingNewsArticle>();
 
   if (lookupError) {
-    return lookupError;
+    return { error: lookupError, didWrite: false };
+  }
+
+  if (existing && !isAutomatedNewsArticle(existing)) {
+    return { error: null, didWrite: false };
   }
 
   const { slug: _newSlug, ...updatePayload } = payload;
@@ -120,7 +145,7 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
     : await supabase.from("articles").insert(payload);
 
-  return error;
+  return { error, didWrite: !error };
 }
 
 async function fetchGNewsItems(): Promise<RssItem[]> {
@@ -174,11 +199,11 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items.slice(0, 20)) {
-        const error = await upsertNewsItem(supabase, item);
+        const { error, didWrite } = await upsertNewsItem(supabase, item);
 
         if (error) {
           errors.push(`${item.link}: ${error.message}`);
-        } else {
+        } else if (didWrite) {
           itemsUpserted += 1;
         }
       }
@@ -192,11 +217,11 @@ export async function ingestNews(supabase: SupabaseClient) {
     itemsSeen += gnewsItems.length;
 
     for (const item of gnewsItems) {
-      const error = await upsertNewsItem(supabase, item);
+      const { error, didWrite } = await upsertNewsItem(supabase, item);
 
       if (error) {
         errors.push(`${item.link}: ${error.message}`);
-      } else {
+      } else if (didWrite) {
         itemsUpserted += 1;
       }
     }
@@ -213,11 +238,11 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items) {
-        const error = await upsertNewsItem(supabase, item);
+        const { error, didWrite } = await upsertNewsItem(supabase, item);
 
         if (error) {
           errors.push(`${item.link}: ${error.message}`);
-        } else {
+        } else if (didWrite) {
           itemsUpserted += 1;
         }
       }
