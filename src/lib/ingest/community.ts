@@ -31,6 +31,15 @@ type IncomingCommunityRecord = {
   tags?: unknown;
 };
 
+type CommunityPayload = Record<string, unknown> & {
+  source_url: string;
+};
+
+type IngestWriteResult =
+  | { status: "inserted" }
+  | { status: "skipped" }
+  | { status: "error"; message: string };
+
 function configuredFeeds(envName: string) {
   return (process.env[envName] ?? "")
     .split(",")
@@ -73,7 +82,10 @@ function tags(value: unknown) {
   return [];
 }
 
-function normalizeRecord(kind: CommunityKind, record: IncomingCommunityRecord) {
+function normalizeRecord(
+  kind: CommunityKind,
+  record: IncomingCommunityRecord,
+): CommunityPayload | null {
   const sourceUrl = normalizeUrl(record.source_url ?? record.url);
   const title = cleanText(record.title, 180);
   const description = cleanText(record.description, 500);
@@ -150,6 +162,34 @@ async function fetchJsonFeed(url: string) {
   return [];
 }
 
+async function insertCommunityRecord(
+  supabase: SupabaseClient,
+  kind: CommunityKind,
+  payload: CommunityPayload,
+): Promise<IngestWriteResult> {
+  const { data: existing, error: lookupError } = await supabase
+    .from(kind)
+    .select("id")
+    .eq("source_url", payload.source_url)
+    .maybeSingle<{ id: string }>();
+
+  if (lookupError) {
+    return { status: "error", message: lookupError.message };
+  }
+
+  if (existing) {
+    return { status: "skipped" };
+  }
+
+  const { error } = await supabase.from(kind).insert(payload as never);
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  return { status: "inserted" };
+}
+
 export async function ingestCommunityFeed(
   supabase: SupabaseClient,
   kind: CommunityKind,
@@ -159,6 +199,7 @@ export async function ingestCommunityFeed(
   const errors: string[] = [];
   let itemsSeen = 0;
   let itemsUpserted = 0;
+  let itemsSkipped = 0;
 
   for (const feed of feeds) {
     try {
@@ -172,12 +213,12 @@ export async function ingestCommunityFeed(
           continue;
         }
 
-        const { error } = await supabase
-          .from(kind)
-          .upsert(payload as never, { onConflict: "source_url" });
+        const result = await insertCommunityRecord(supabase, kind, payload);
 
-        if (error) {
-          errors.push(`${payload.source_url}: ${error.message}`);
+        if (result.status === "error") {
+          errors.push(`${payload.source_url}: ${result.message}`);
+        } else if (result.status === "skipped") {
+          itemsSkipped += 1;
         } else {
           itemsUpserted += 1;
         }
@@ -198,12 +239,13 @@ export async function ingestCommunityFeed(
     itemsSeen += adapterRecords.length;
 
     for (const record of adapterRecords) {
-      const { error } = await supabase
-        .from(kind)
-        .upsert(record as never, { onConflict: "source_url" });
+      const payload = record as CommunityPayload;
+      const result = await insertCommunityRecord(supabase, kind, payload);
 
-      if (error) {
-        errors.push(`${"source_url" in record ? record.source_url : kind}: ${error.message}`);
+      if (result.status === "error") {
+        errors.push(`${payload.source_url}: ${result.message}`);
+      } else if (result.status === "skipped") {
+        itemsSkipped += 1;
       } else {
         itemsUpserted += 1;
       }
@@ -212,5 +254,5 @@ export async function ingestCommunityFeed(
     errors.push(error instanceof Error ? error.message : `Unknown ${kind} adapter failure`);
   }
 
-  return { itemsSeen, itemsUpserted, errors };
+  return { itemsSeen, itemsUpserted, itemsSkipped, errors };
 }
