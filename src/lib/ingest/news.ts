@@ -27,6 +27,11 @@ type GNewsArticle = {
   source?: { name?: string };
 };
 
+type IngestWriteResult =
+  | { status: "inserted" }
+  | { status: "skipped" }
+  | { status: "error"; message: string };
+
 const topicKeywords: Array<{ topic: ArticleTopic; keywords: string[] }> = [
   { topic: "politics", keywords: ["election", "voter", "congress", "policy", "mayor"] },
   { topic: "business", keywords: ["business", "founder", "startup", "funding", "wealth"] },
@@ -76,7 +81,10 @@ function curatedBody(item: RssItem) {
   ].join("\n\n");
 }
 
-async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
+async function upsertNewsItem(
+  supabase: SupabaseClient,
+  item: RssItem,
+): Promise<IngestWriteResult> {
   const topic = categorize(item);
   const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
   const payload = {
@@ -107,20 +115,25 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   };
   const { data: existing, error: lookupError } = await supabase
     .from("articles")
-    .select("id, slug")
+    .select("id")
     .eq("source_url", item.link)
     .maybeSingle<{ id: string }>();
 
   if (lookupError) {
-    return lookupError;
+    return { status: "error", message: lookupError.message };
   }
 
-  const { slug: _newSlug, ...updatePayload } = payload;
-  const { error } = existing
-    ? await supabase.from("articles").update(updatePayload).eq("id", existing.id)
-    : await supabase.from("articles").insert(payload);
+  if (existing) {
+    return { status: "skipped" };
+  }
 
-  return error;
+  const { error } = await supabase.from("articles").insert(payload);
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  return { status: "inserted" };
 }
 
 async function fetchGNewsItems(): Promise<RssItem[]> {
@@ -167,6 +180,7 @@ export async function ingestNews(supabase: SupabaseClient) {
   const errors: string[] = [];
   let itemsSeen = 0;
   let itemsUpserted = 0;
+  let itemsSkipped = 0;
 
   for (const source of sources) {
     try {
@@ -174,10 +188,12 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items.slice(0, 20)) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
+        if (result.status === "error") {
+          errors.push(`${item.link}: ${result.message}`);
+        } else if (result.status === "skipped") {
+          itemsSkipped += 1;
         } else {
           itemsUpserted += 1;
         }
@@ -192,10 +208,12 @@ export async function ingestNews(supabase: SupabaseClient) {
     itemsSeen += gnewsItems.length;
 
     for (const item of gnewsItems) {
-      const error = await upsertNewsItem(supabase, item);
+      const result = await upsertNewsItem(supabase, item);
 
-      if (error) {
-        errors.push(`${item.link}: ${error.message}`);
+      if (result.status === "error") {
+        errors.push(`${item.link}: ${result.message}`);
+      } else if (result.status === "skipped") {
+        itemsSkipped += 1;
       } else {
         itemsUpserted += 1;
       }
@@ -213,10 +231,12 @@ export async function ingestNews(supabase: SupabaseClient) {
       itemsSeen += items.length;
 
       for (const item of items) {
-        const error = await upsertNewsItem(supabase, item);
+        const result = await upsertNewsItem(supabase, item);
 
-        if (error) {
-          errors.push(`${item.link}: ${error.message}`);
+        if (result.status === "error") {
+          errors.push(`${item.link}: ${result.message}`);
+        } else if (result.status === "skipped") {
+          itemsSkipped += 1;
         } else {
           itemsUpserted += 1;
         }
@@ -226,5 +246,5 @@ export async function ingestNews(supabase: SupabaseClient) {
     }
   }
 
-  return { itemsSeen, itemsUpserted, errors };
+  return { itemsSeen, itemsUpserted, itemsSkipped, errors };
 }
