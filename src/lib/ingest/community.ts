@@ -73,6 +73,10 @@ function tags(value: unknown) {
   return [];
 }
 
+function isIncomingCommunityRecord(value: unknown): value is IncomingCommunityRecord {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function normalizeRecord(kind: CommunityKind, record: IncomingCommunityRecord) {
   const sourceUrl = normalizeUrl(record.source_url ?? record.url);
   const title = cleanText(record.title, 180);
@@ -140,11 +144,11 @@ async function fetchJsonFeed(url: string) {
 
   const data = (await response.json()) as unknown;
   if (Array.isArray(data)) {
-    return data as IncomingCommunityRecord[];
+    return data.filter(isIncomingCommunityRecord);
   }
 
   if (data && typeof data === "object" && Array.isArray((data as { items?: unknown }).items)) {
-    return (data as { items: IncomingCommunityRecord[] }).items;
+    return (data as { items: unknown[] }).items.filter(isIncomingCommunityRecord);
   }
 
   return [];
