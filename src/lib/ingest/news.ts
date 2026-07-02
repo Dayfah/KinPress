@@ -76,6 +76,15 @@ function curatedBody(item: RssItem) {
   ].join("\n\n");
 }
 
+function dateOrNull(value: string | null) {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? null : date.toISOString();
+}
+
 async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   const topic = categorize(item);
   const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
@@ -93,9 +102,7 @@ async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
     cover_image_url: item.imageUrl,
     image_url: item.imageUrl,
     status: "published",
-    published_at: item.publishedAt
-      ? new Date(item.publishedAt).toISOString()
-      : null,
+    published_at: dateOrNull(item.publishedAt),
     is_featured: false,
     editor_pick: false,
     reading_time: 2,
