@@ -47,6 +47,39 @@ type EventbriteEvent = {
   venue?: { address?: { localized_address_display?: string } };
 };
 
+function dateOnlyOrNull(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const slashDate = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(trimmed);
+  if (slashDate) {
+    const [, monthValue, dayValue, yearValue] = slashDate;
+    const month = Number(monthValue);
+    const day = Number(dayValue);
+    const year = Number(yearValue);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    ) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    return null;
+  }
+
+  const date = new Date(trimmed);
+  return Number.isNaN(date.valueOf()) ? null : date.toISOString().slice(0, 10);
+}
+
 function toRssItem(
   title: unknown,
   link: unknown,
@@ -184,7 +217,7 @@ export async function fetchGrantsGovOpportunities() {
         organization: cleanText(grant.agency, 160) || "Grants.gov",
         description: `Federal opportunity listed by Grants.gov${grant.opportunityNumber ? ` (${grant.opportunityNumber})` : ""}. Review eligibility and application instructions at the source.`,
         category: cleanText(grant.opportunityCategory, 80) || "grants",
-        deadline: grant.closeDate ?? null,
+        deadline: dateOnlyOrNull(grant.closeDate),
         eligibility: "See official Grants.gov listing.",
         amount:
           grant.awardFloor || grant.awardCeiling
