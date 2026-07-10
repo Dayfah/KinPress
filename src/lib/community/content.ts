@@ -118,12 +118,16 @@ export const getEvents = cache(async function getEvents(
     return { items: [], error: null };
   }
 
+  // PostgREST logical filters require quotes around values containing reserved
+  // grammar characters like the ':' and '.' in ISO timestamps.
+  const now = new Date().toISOString();
+
   const { data, error } = await supabase
     .from("events")
     .select(EVENT_COLUMNS)
     .eq("status", "published")
     .eq("is_verified", true)
-    .or(`starts_at.is.null,starts_at.gte.${new Date().toISOString()}`)
+    .or(`starts_at.is.null,starts_at.gte."${now}"`)
     .order("starts_at", { ascending: true, nullsFirst: false })
     .limit(limit)
     .returns<CommunityEvent[]>();
