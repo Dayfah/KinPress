@@ -232,7 +232,6 @@ export function collectPublicEnvIssues(options?: {
 
 export function formatEnvIssues(issues: EnvIssue[]): string {
   return issues
-    .filter((i) => i.severity === "error")
     .map((i) => `  - [${i.code}] ${i.message}`)
     .join("\n");
 }
@@ -279,19 +278,14 @@ export function assertProductionEnvForBuild(): void {
 
   const issues = collectPublicEnvIssues({ requireSiteUrl: isVercel });
   const errors = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
 
-  const blockingCodes = new Set([
-    "SERVICE_ROLE_EXPOSED",
-    "SERVICE_ROLE_AS_PUBLIC",
-    "SUPABASE_KEY_SERVICE_ROLE",
-  ]);
-
-  const blocking = errors.filter((i) => blockingCodes.has(i.code));
-  const warnings = errors.filter((i) => !blockingCodes.has(i.code));
-
-  if (blocking.length > 0) {
+  if (errors.length > 0) {
+    const header = isVercel
+      ? "KinPress Vercel build: fix Environment Variables (Production) in the Vercel dashboard:"
+      : "KinPress build: fix environment variables (.env.local or CI secrets):";
     throw new Error(
-      `KinPress build blocked — unsafe environment configuration:\n${formatEnvIssues(blocking)}\n\nSee .env.example and README.md.`,
+      `${header}\n${formatEnvIssues(errors)}\n\nSee .env.example and README.md.`,
     );
   }
 
