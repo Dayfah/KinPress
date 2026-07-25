@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { fetchGuardianItems, fetchNewsApiItems } from "@/lib/ingest/adapters";
@@ -76,9 +78,15 @@ function curatedBody(item: RssItem) {
   ].join("\n\n");
 }
 
+function curatedSlug(sourceName: string, title: string, sourceUrl: string) {
+  const suffix = createHash("sha256").update(sourceUrl).digest("hex").slice(0, 8);
+  const base = slugifyTitle(`${sourceName}-${title}`).slice(0, 71);
+  return `${base || "story"}-${suffix}`;
+}
+
 async function upsertNewsItem(supabase: SupabaseClient, item: RssItem) {
   const topic = categorize(item);
-  const slug = slugifyTitle(`${item.sourceName}-${item.title}`);
+  const slug = curatedSlug(item.sourceName, item.title, item.link);
   const payload = {
     title: item.title,
     slug,
