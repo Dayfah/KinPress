@@ -18,20 +18,70 @@ const parser = new XMLParser({
   trimValues: true,
 });
 
-function asArray<T>(value: T | T[] | undefined): T[] {
+function asArray<T>(value: T | T[] | undefined | null): T[] {
   if (!value) {
     return [];
   }
   return Array.isArray(value) ? value : [value];
 }
 
+function textValue(value: unknown): string {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const nested = textValue(entry);
+      if (nested) {
+        return nested;
+      }
+    }
+    return "";
+  }
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return textValue(record["#text"] ?? record._ ?? record.value);
+  }
+
+  return "";
+}
+
 function firstString(...values: unknown[]) {
   for (const value of values) {
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
+    const text = textValue(value);
+    if (text) {
+      return text;
     }
   }
   return "";
+}
+
+function pickLink(link: unknown) {
+  const candidates = asArray(link as { href?: string; rel?: string } | string | undefined);
+  const normalized = candidates
+    .map((candidate) => {
+      if (typeof candidate === "string") {
+        return { href: normalizeUrl(candidate), rel: "" };
+      }
+
+      if (candidate && typeof candidate === "object") {
+        return {
+          href: normalizeUrl(candidate.href),
+          rel: typeof candidate.rel === "string" ? candidate.rel.toLowerCase() : "",
+        };
+      }
+
+      return { href: null as string | null, rel: "" };
+    })
+    .filter((candidate): candidate is { href: string; rel: string } => Boolean(candidate.href));
+
+  return (
+    normalized.find((candidate) => !candidate.rel || candidate.rel === "alternate")?.href ??
+    normalized[0]?.href ??
+    null
+  );
 }
 
 function pickImage(item: Record<string, unknown>) {
@@ -64,12 +114,8 @@ export async function fetchRssItems(feedUrl: string, sourceName?: string): Promi
 
   return items
     .map((item) => {
-      const linkValue =
-        typeof item.link === "object" && item.link !== null
-          ? (item.link as { href?: string }).href
-          : item.link;
-      const link = normalizeUrl(linkValue);
-      const title = cleanText(item.title, 160);
+      const link = pickLink(item.link);
+      const title = cleanText(firstString(item.title), 160);
 
       if (!link || !title) {
         return null;
