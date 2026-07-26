@@ -15,7 +15,7 @@ const DEFAULT_RSS_SOURCES: NewsSource[] = [
   { name: "Word In Black", url: "https://wordinblack.com/feed/" },
   { name: "TheGrio", url: "https://thegrio.com/feed/" },
   { name: "Black Enterprise", url: "https://www.blackenterprise.com/feed/" },
-  { name: "AfroTech", url: "https://afrotech.com/feed/" },
+  { name: "AfroTech", url: "https://afrotech.com/rss.xml" },
 ];
 
 type GNewsArticle = {
