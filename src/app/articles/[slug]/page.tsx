@@ -12,6 +12,7 @@ import {
   CommentSection,
   type VisibleComment,
 } from "@/components/comment-section";
+import { resolveCommentUserName } from "@/lib/auth/comment-user-name";
 import { getArticleBySlug, getRelatedArticles } from "@/lib/editorial/articles";
 import { formatPublishedDate } from "@/lib/content";
 import { createClient } from "@/lib/supabase/server";
@@ -62,15 +63,6 @@ function readCommentText(formData: FormData) {
   return value.trim();
 }
 
-function getUserName(profile: CommentProfile | null, email?: string) {
-  return (
-    profile?.display_name?.trim() ||
-    profile?.username?.trim() ||
-    email ||
-    "KinPress reader"
-  );
-}
-
 async function addComment(articleId: string, slug: string, formData: FormData) {
   "use server";
 
@@ -103,7 +95,7 @@ async function addComment(articleId: string, slug: string, formData: FormData) {
   const { error } = await supabase.from("comments").insert({
     article_id: articleId,
     user_id: user.id,
-    user_name: getUserName(profile, user.email),
+    user_name: resolveCommentUserName(profile),
     user_avatar_url: profile?.avatar_url ?? null,
     comment_text: commentText,
     status: "visible",

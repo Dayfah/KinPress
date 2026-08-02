@@ -11,7 +11,8 @@
 4. `supabase/migrations/003_supabase_app_alignment.sql`
 5. `supabase/migrations/004_production_safe_hardening.sql` (role-escalation guard, idempotent RLS)
 6. `supabase/migrations/005_community_resources_opportunities_events.sql`
-7. `supabase/seed_editorial.sql` (optional starter content; safe to re-run)
+7. `supabase/migrations/007_force_comment_attribution_from_profile.sql` (overwrite client-supplied comment names/avatars from profiles)
+8. `supabase/seed_editorial.sql` (optional starter content; safe to re-run)
 
 ## 2. Auth URL configuration
 
