@@ -10,11 +10,22 @@ function getInitial(name: string | null) {
 }
 
 function formatCommentDate(createdAt: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(createdAt));
+  const date = new Date(createdAt);
+
+  // Postgres accepts values like 'infinity' that JS cannot format; never crash the article page.
+  if (Number.isNaN(date.valueOf())) {
+    return null;
+  }
+
+  try {
+    return new Intl.DateTimeFormat("en", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date);
+  } catch {
+    return null;
+  }
 }
 
 export function CommentCard({
@@ -24,6 +35,7 @@ export function CommentCard({
   createdAt,
 }: CommentCardProps) {
   const displayName = userName?.trim() || "KinPress reader";
+  const formattedDate = formatCommentDate(createdAt);
 
   return (
     <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
@@ -42,12 +54,14 @@ export function CommentCard({
 
         <div className="min-w-0">
           <p className="truncate font-medium text-foreground">{displayName}</p>
-          <time
-            className="text-xs uppercase tracking-[0.12em] text-muted-foreground"
-            dateTime={createdAt}
-          >
-            {formatCommentDate(createdAt)}
-          </time>
+          {formattedDate ? (
+            <time
+              className="text-xs uppercase tracking-[0.12em] text-muted-foreground"
+              dateTime={createdAt}
+            >
+              {formattedDate}
+            </time>
+          ) : null}
         </div>
       </header>
 
